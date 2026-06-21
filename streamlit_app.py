@@ -70,7 +70,7 @@ if "whale_threshold" not in st.session_state:
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
-    st.session_state.tg_token = "8805371373:AAGkYYnNqHPPdFyI8XFh3S_7WpW5D87uP6k"
+    st.session_state.tg_token = "8805371373:AAGkYYnNqHPPdFy3kRiOGyT2-ZDyaewaa3M"
 if "channel_routing" not in st.session_state:
     st.session_state.channel_routing = default_routing
 
