@@ -5,9 +5,9 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Multi-Channel Tracker V36", layout="wide")
+st.set_page_config(page_title="Polymarket YES-Only Tracker V38", layout="wide")
 
-# --- 🎨 CSS HIỆU ỨNG GIAO DIỆN ---
+# --- 🎨 CSS INTERFACE ---
 st.markdown(
     """
     <style>
@@ -27,16 +27,6 @@ st.markdown(
         animation: blink-green 1.5s infinite;
         color: #1e7e34;
     }
-    .bot-refill-alert {
-        padding: 10px;
-        border: 1px dashed #7f8c8d;
-        border-radius: 8px;
-        font-size: 14px;
-        text-align: center;
-        margin-bottom: 10px;
-        background-color: #f8f9fa;
-        color: #7f8c8d;
-    }
     .city-header {
         background-color: #2c3e50;
         color: white;
@@ -51,27 +41,25 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🔥 POLYMARKET TRACKER V36 - MULTI-CHANNEL ROUTING")
+st.title("🔥 POLYMARKET TRACKER V38 - 100% YES ALERTS ONLY")
 
-# --- 🔐 KHỞI TẠO TRẠNG THÁI HỆ THỐNG ---
-if "last_whale_alert_v36" not in st.session_state:
-    st.session_state.last_whale_alert_v36 = {}
+# --- 🔐 STATE INITIALIZATION ---
+if "last_whale_alert_v38" not in st.session_state:
+    st.session_state.last_whale_alert_v38 = {}
 if "price_history" not in st.session_state:
     st.session_state.price_history = {}
 
-# Sẵn sàng cấu hình mặc định cho 4 thành phố/kèo mẫu cùng lúc
 default_cities = [
     "highest-temperature-in-tokyo-on-june-22-2026",
-    "highest-temperature-in-singapore-on-june-23-2026",
-    "highest-temperature-in-new-york-on-june-22-2026",
-    "highest-temperature-in-madrid-on-june-23-2026"
+    "highest-temperature-in-madrid-on-june-23-2026",
+    "highest-temperature-in-singapore-on-june-22-2026",
+    "highest-temperature-in-new-york-on-june-22-2026"
 ]
 
 default_routing = {
     "tokyo": "-1004312043313",
-    "singapore": "-1004377611538",
-    "new-york": "-1004317098765",
-    "madrid": "-1004299539957",
+    "madrid": "-1004312043313",
+    "singapore": "-1004312043313",
     "default": "-1004312043313"
 }
 
@@ -82,57 +70,52 @@ if "whale_threshold" not in st.session_state:
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
-    st.session_state.tg_token = "8805371373:AAGkYYnNqHPPdFy3kRiOGyT2-ZDyaewaa3M"
+    st.session_state.tg_token = "8805371373:AAGkYYnNqHPPdFyI8XFh3S_7WpW5D87uP6k"
 if "channel_routing" not in st.session_state:
     st.session_state.channel_routing = default_routing
 
-# --- 🛠️ SIDEBAR: CẤU HÌNH ĐƯỜNG TRUYỀN ---
+# --- 🛠️ SIDEBAR CONFIG ---
 with st.sidebar:
     with st.form(key="config_form"):
-        st.header("🔌 Kết Nối Telegram Bot")
-        tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
+        st.header("🔌 Telegram Connection")
+        tg_token_input = st.text_input("Bot Token:", value=st.session_state.tg_token, type="password")
 
         st.write("---")
-        st.header("📁 PHÂN CHIA CHAT ID RIÊNG BIỆT")
-        st.write("_Nhập ID phòng chat riêng (Để trống sẽ tự động dùng kênh dự phòng):_")
+        st.header("📁 ROUTING CHAT ID")
         id_tokyo = st.text_input("ID Kênh Tokyo:", value=st.session_state.channel_routing.get("tokyo", ""))
+        id_madrid = st.text_input("ID Kênh Madrid:", value=st.session_state.channel_routing.get("madrid", ""))
         id_sing = st.text_input("ID Kênh Singapore:", value=st.session_state.channel_routing.get("singapore", ""))
-        id_ny = st.text_input("ID Kênh New York:", value=st.session_state.channel_routing.get("new-york", ""))
-        id_london = st.text_input("ID Kênh London:", value=st.session_state.channel_routing.get("london", ""))
-        id_def = st.text_input("ID Kênh Khác (Dự phòng):", value=st.session_state.channel_routing.get("default", ""))
+        id_def = st.text_input("ID Kênh Dự Phòng:", value=st.session_state.channel_routing.get("default", ""))
 
         st.write("---")
-        st.header("🛡️ Bộ lọc & Tốc độ")
-        threshold_input = st.slider("Chỉ báo nếu Tiền biến động > ($):", 10, 2000, value=st.session_state.whale_threshold, step=10)
-        refresh_input = st.slider("Tốc độ quét vòng lặp (giây):", 5, 60, value=st.session_state.refresh_rate)
+        st.header("🛡️ Filters")
+        threshold_input = st.slider("Ngưỡng biến động tiền ($):", 10, 2000, value=st.session_state.whale_threshold, step=10)
+        refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="💾 LƯU CẤU HÌNH PHÂN KÊNH", use_container_width=True)
+        submit_button = st.form_submit_button(label="💾 CẬP NHẬT CẤU HÌNH V38", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
             st.session_state.refresh_rate = refresh_input
             st.session_state.tg_token = tg_token_input
-            
-            # GIẢI PHÁP SỬA LỖI: Điền an toàn (or "") chống gãy lỗi sập hệ thống khi ô nhập rỗng
             st.session_state.channel_routing = {
                 "tokyo": (id_tokyo or "").strip(),
+                "madrid": (id_madrid or "").strip(),
                 "singapore": (id_sing or "").strip(),
-                "new-york": (id_ny or "").strip(),
-                "london": (id_london or "").strip(),
                 "default": (id_def or "").strip()
             }
-            st.toast("✅ Đã cập nhật và sửa lỗi định tuyến an toàn thành công!")
+            st.toast("✅ Đã lưu cấu hình phân luồng V38!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
 refresh_rate = st.session_state.refresh_rate
 
-# --- 📝 KHU VỰC NHẬP LINK ĐỒNG THỜI (HỖ TRỢ 4 LINK TRỞ LÊN) ---
-st.subheader("📋 Nhập danh sách 4 URL/Slug Polymarket chạy song song:")
+# --- 📝 INPUT AREA ---
+st.subheader("📋 Danh sách các link kèo đang quét song song:")
 cities_text = st.text_area(
-    "Dán các đường dẫn vào đây (Mỗi dòng là một thành phố riêng biệt):", 
+    "Mỗi dòng một đường dẫn link:", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.city_slugs]),
-    height=150  # Tăng chiều cao để nhìn rõ 4 dòng
+    height=150
 )
 
 def extract_slug(url_str):
@@ -145,7 +128,6 @@ def extract_slug(url_str):
         return path_parts[-1]
     except: return None
 
-# Bóc tách danh sách link người dùng dán vào
 current_input_slugs = []
 for line in cities_text.split("\n"):
     slug = extract_slug(line)
@@ -153,7 +135,7 @@ for line in cities_text.split("\n"):
 
 if current_input_slugs and current_input_slugs != st.session_state.city_slugs:
     st.session_state.city_slugs = current_input_slugs
-    st.toast("🔄 Đã ghi nhận danh sách 4 mốc thị trường mới!")
+    st.toast("🔄 Đã cập nhật danh sách mốc quét!")
 
 def get_polymarket_hot_zones(slug):
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -195,30 +177,24 @@ def get_polymarket_hot_zones(slug):
                 real_usd_yes = round((row['Volume'] * row['YES_Price']) / 100, 2)
                 real_usd_no = round((row['Volume'] * row['NO_Price']) / 100, 2)
 
+                # CHỈ LẤY CỬA YES VÀO DANH SÁCH XỬ LÝ - LOẠI BỎ 'NO' NGAY TỪ ĐẦU VÀO CỦA HỆ THỐNG
                 final_data.append({"Bin": row['Base_Name'], "Side": "YES", "Giá (Cents)": round(row['YES_Price'], 2), "Giá trị lệnh thực ($)": real_usd_yes})
-                final_data.append({"Bin": row['Base_Name'], "Side": "NO", "Giá (Cents)": round(row['NO_Price'], 2), "Giá trị lệnh thực ($)": real_usd_no})
                 
             return {"title": market_title, "df": pd.DataFrame(final_data)}
         return None
     except: return None
 
-# --- 🚀 HÀM TỰ ĐỘNG CHIA TIN NHẮN VỀ ĐÚNG KÊNH ---
 def send_telegram_by_routing(slug, message):
     if not TELEGRAM_TOKEN: return
-    
-    # Mặc định chọn kênh dự phòng
     target_chat_id = st.session_state.channel_routing.get("default", "")
     slug_lower = slug.lower()
     
-    # Kiểm tra từ khóa trong slug để điều hướng trúng đích
     if "tokyo" in slug_lower:
         target_chat_id = st.session_state.channel_routing.get("tokyo", target_chat_id)
+    elif "madrid" in slug_lower:
+        target_chat_id = st.session_state.channel_routing.get("madrid", target_chat_id)
     elif "singapore" in slug_lower:
         target_chat_id = st.session_state.channel_routing.get("singapore", target_chat_id)
-    elif "new-york" in slug_lower or "nyc" in slug_lower:
-        target_chat_id = st.session_state.channel_routing.get("new-york", target_chat_id)
-    elif "london" in slug_lower:
-        target_chat_id = st.session_state.channel_routing.get("london", target_chat_id)
         
     if not target_chat_id or not str(target_chat_id).strip(): return
     try: 
@@ -228,7 +204,7 @@ def send_telegram_by_routing(slug, message):
     except: 
         pass
 
-# --- VÒNG LẶP QUÉT XOAY VÒNG 4 THÀNH PHỐ ---
+# --- MAIN LOOP ---
 current_now = time.time()
 st.write("---")
 
@@ -240,7 +216,7 @@ for target_slug in st.session_state.city_slugs:
     df = data["df"]
     analysis_labels = []
     
-    st.markdown(f'<div class="city-header">🏙️ ĐANG QUÉT: {title.upper()}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="city-header">🏙️ ĐANG QUÉT CHỈ CỬA YES: {title.upper()}</div>', unsafe_allow_html=True)
     
     for _, row in df.iterrows():
         mốc_nhiệt = row["Bin"]
@@ -254,30 +230,25 @@ for target_slug in st.session_state.city_slugs:
         flow_type = "⚪ Nhỏ lẻ"
 
         if real_usd >= whale_threshold_usd:
-            # Nếu chênh lệch dòng tiền tĩnh dưới $5 -> Nhãn Bot giữ sàn
             if previous_usd is not None and abs(real_usd - previous_usd) <= 5.0:
                 flow_type = "🤖 BOT REFILL"
             else:
-                # Nếu có lệnh mới làm biến động trên $5 -> Người thật mua/bán
-                flow_type = "🔥 CÓ NGƯỜI MUA"
-                st.markdown(f'<div class="whale-real-alert">🟢 KHỚP LỆNH MỚI THỰC TẾ 🟢 Mốc: {mốc_nhiệt} ({hướng_cược}) | Số tiền: ${real_usd:,.2f}</div>', unsafe_allow_html=True)
+                flow_type = "🔥 CÓ NGƯỜI MUA YES"
+                st.markdown(f'<div class="whale-real-alert">🟢 BIẾN ĐỘNG THỰC TẾ (YES) 🟢 Mốc: {mốc_nhiệt} | Tiền: ${real_usd:,.2f}</div>', unsafe_allow_html=True)
                 
-                last_alert_time = st.session_state.last_whale_alert_v36.get(history_key, 0)
+                last_alert_time = st.session_state.last_whale_alert_v38.get(history_key, 0)
                 if current_now - last_alert_time > 10:
-                    side_icon = "🟢 MUA ĐỒNG Ý (YES)" if hướng_cược == "YES" else "🔴 MUA PHẢN ĐỐI (NO)"
-                    
                     urgent_msg = (
-                        f"📊 *BÁO ĐỘNG BIẾN ĐỘNG THỊ TRƯỜNG THỰC TẾ* 📊\n\n"
+                        f"📊 *BÁO ĐỘNG BIẾN ĐỘNG: MUA ĐỒNG Ý (YES)* 📊\n\n"
                         f"🏙️ *Thành phố:* {title}\n"
                         f"📌 *Vị thế mốc:* `{mốc_nhiệt}`\n"
-                        f"🎯 *Hành động:* *{side_icon}*\n"
+                        f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
                         f"💵 *Mức giá:* `{price_cents}¢`\n"
-                        f"💰 *Tổng tiền cửa hiện tại:* *${real_usd:,.2f}*\n"
-                        f"📬 _Hệ thống: Đã chuyển phát tin nhắn này về nhóm chuyên biệt thành công._"
+                        f"💰 *Tổng tiền cửa YES hiện tại:* *${real_usd:,.2f}*\n"
+                        f"📬 _Hệ thống bảo vệ: Đã chặn triệt để 100% lệnh NO._"
                     )
-                    # Thực hiện phân luồng gửi về đúng kênh Telegram riêng
                     send_telegram_by_routing(target_slug, urgent_msg)
-                    st.session_state.last_whale_alert_v36[history_key] = current_now
+                    st.session_state.last_whale_alert_v38[history_key] = current_now
         
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
@@ -285,6 +256,6 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Radar V36 đang quét chu kỳ xoay vòng liên tục sau mỗi {refresh_rate} giây.")
+st.info(f"⚙️ Radar V38 (Chặn sạch NO) đang quét tự động. Chu kỳ {refresh_rate} giây.")
 time.sleep(refresh_rate)
 st.rerun()
