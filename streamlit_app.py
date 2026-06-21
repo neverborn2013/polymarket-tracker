@@ -58,8 +58,8 @@ default_cities = [
 
 default_routing = {
     "tokyo": "-1004312043313",
-    "madrid": "-1004312043313",
-    "singapore": "-1004312043313",
+    "madrid": "-1004299539957",
+    "singapore": "-1004377611538 ",
     "default": "-1004312043313"
 }
 
