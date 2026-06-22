@@ -98,10 +98,6 @@ https://polymarket.com/vi/sports/wta/wta-tauson-shnaide-2026-06-21
 https://polymarket.com/vi/sports/wta/wta-jovic-wa-2026-06-21
 https://polymarket.com/vi/sports/world-cup/fifwc-arg-aut-2026-06-22
 https://polymarket.com/vi/sports/world-cup/fifwc-fra-irq-2026-06-22
-https://polymarket.com/vi/esports/cs2/gamers-club-liga-s-rie-a/cs2-odk-alkaa-2026-06-22
-https://polymarket.com/vi/esports/dota-2/the-international/dota2-xctn-grind-2026-06-22
-https://polymarket.com/vi/esports/dota-2/the-international/dota2-xctn-grind-2026-06-22
-https://polymarket.com/vi/esports/dota-2/the-international/dota2-pr1-l1ga-2026-06-22
 https://polymarket.com/vi/sports/world-cup/fifwc-nor-sen-2026-06-22
 https://polymarket.com/vi/sports/world-cup/fifwc-jor-alg-2026-06-22
 https://polymarket.com/vi/sports/world-cup/fifwc-prt-uzb-2026-06-23
@@ -112,8 +108,11 @@ https://polymarket.com/vi/esports/valorant/vcl/val-ucam-pl-2026-06-22
 https://polymarket.com/vi/esports/cs2/united21/cs2-cls1-mil-2026-06-23
 https://polymarket.com/vi/esports/valorant/vcl/val-ep1-bar-2026-06-22
 https://polymarket.com/vi/esports/cs2/draculan/cs2-sashi-9ine-2026-06-23
-https://polymarket.com/vi/event/btc-updown-15m-1782139500
 https://polymarket.com/vi/sports/atp/atp-collign-cerund-2026-06-22
+https://polymarket.com/vi/sports/mlb/mlb-tex-mia-2026-06-22
+https://polymarket.com/vi/sports/mlb/mlb-phi-wsh-2026-06-22
+https://polymarket.com/vi/sports/mlb/mlb-chc-nym-2026-06-22
+
 """
 
 def extract_slug(url_str):
