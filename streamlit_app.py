@@ -110,6 +110,10 @@ https://polymarket.com/vi/sports/world-cup/fifwc-prt-uzb-2026-06-23
 https://polymarket.com/vi/sports/world-cup/fifwc-eng-gha-2026-06-23
 https://polymarket.com/vi/sports/world-cup/fifwc-pan-hrv-2026-06-23
 https://polymarket.com/vi/sports/world-cup/fifwc-col-cdr-2026-06-23
+https://polymarket.com/vi/esports/valorant/vcl/val-ucam-pl-2026-06-22
+https://polymarket.com/vi/esports/cs2/united21/cs2-cls1-mil-2026-06-23
+https://polymarket.com/vi/esports/valorant/vcl/val-ep1-bar-2026-06-22
+https://polymarket.com/vi/esports/cs2/draculan/cs2-sashi-9ine-2026-06-23
 """
 
 def extract_slug(url_str):
