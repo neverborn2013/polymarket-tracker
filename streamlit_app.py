@@ -73,27 +73,27 @@ https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026
  https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-23-20226 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-23-2026
  https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026  
-https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-22-2026    
-https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-22-2026 
- https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-22-2026 
- https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-22-20226
- https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-22-2026
- https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-22-2026  
- https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-22-2026   
-https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-22-2026 
- https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-22-2026    
-https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-22-2026   
-https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-22-2026    
-https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-22-2026  
- https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-22-202   
-https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-23-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-23-2026
+https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-23-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-23-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-23-2026    
+https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-23-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-23-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-23-20226
+ https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-23-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-23-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-23-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-23-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-32-2026   
+https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-23-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-23-2026    
+https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-23-2026   
+https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-23-2026    
+https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-23-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-23-202   
+https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-23-2026 
 https://polymarket.com/vi/sports/wta/wta-tauson-shnaide-2026-06-21 
 https://polymarket.com/vi/sports/wta/wta-jovic-wa-2026-06-21
 https://polymarket.com/vi/sports/world-cup/fifwc-arg-aut-2026-06-22
