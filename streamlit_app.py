@@ -114,6 +114,7 @@ https://polymarket.com/vi/esports/valorant/vcl/val-ucam-pl-2026-06-22
 https://polymarket.com/vi/esports/cs2/united21/cs2-cls1-mil-2026-06-23
 https://polymarket.com/vi/esports/valorant/vcl/val-ep1-bar-2026-06-22
 https://polymarket.com/vi/esports/cs2/draculan/cs2-sashi-9ine-2026-06-23
+https://polymarket.com/vi/event/btc-updown-15m-1782139500
 """
 
 def extract_slug(url_str):
