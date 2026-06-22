@@ -5,9 +5,9 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Anti-Bot Tracker V45", layout="wide")
+st.set_page_config(page_title="Polymarket Anti-Bot Tracker V46", layout="wide")
 
-# --- 🎨 CSS INTERFACE V45 ---
+# --- 🎨 CSS INTERFACE V46 ---
 st.markdown(
     """
     <style>
@@ -41,14 +41,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("⚽ POLYMARKET RADAR V45 - CHỐNG BÁO ĐỘNG GIẢ THỂ THAO")
+st.title("⚽ POLYMARKET RADAR V46 - ĐỘC QUYỀN SĂN KÈO THƠM GIÁ SỚM")
 
-if "last_whale_alert_v45" not in st.session_state:
-    st.session_state.last_whale_alert_v45 = {}
+if "last_whale_alert_v46" not in st.session_state:
+    st.session_state.last_whale_alert_v46 = {}
 if "price_history" not in st.session_state:
     st.session_state.price_history = {}
 
-# --- LINK MẶC ĐỊNH SĂN SONG SONG THỂ THAO & THỜI TIẾT ---
+# --- DANH SÁCH LINK MẶC ĐỊNH SĂN SONG SONG THỂ THAO & THỜI TIẾT ---
 RAW_URL_LIST = """
 https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026 
   https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
@@ -114,7 +114,7 @@ default_cities = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n"
 if "city_slugs" not in st.session_state:
     st.session_state.city_slugs = default_cities
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 1000  # Đặt mặc định về 1000 chuẩn mảng thời tiết
+    st.session_state.whale_threshold = 1000  # Ngưỡng tối ưu $1,000 cho thị trường thời tiết
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
@@ -124,26 +124,26 @@ default_routing = {"default": "-1004312043313"}
 if "channel_routing" not in st.session_state:
     st.session_state.channel_routing = default_routing
 
-# --- 🛠️ SIDEBAR CONFIG ---
+# --- 🛠️ SIDEBAR CONFIG V46 ---
 with st.sidebar:
-    with st.form(key="config_form_v45"):
+    with st.form(key="config_form_v46"):
         st.header("🔌 Cấu hình Telegram")
         tg_token_input = st.text_input("Bot Token:", value=st.session_state.tg_token, type="password")
         id_def = st.text_input("ID Kênh Nhận Tin Tổng:", value=st.session_state.channel_routing.get("default", ""))
 
         st.write("---")
-        st.header("🛡️ Bộ lọc tối cao V45")
+        st.header("🛡️ Bộ lọc tối cao V46")
         threshold_input = st.slider("Ngưỡng tiền lọc Cá Mập ($):", 50, 5000, value=st.session_state.whale_threshold, step=50)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="💾 KÍCH HOẠT HỆ THỐNG V45", use_container_width=True)
+        submit_button = st.form_submit_button(label="💾 KÍCH HOẠT HỆ THỐNG V46", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
             st.session_state.refresh_rate = refresh_input
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_routing = {"default": id_def.strip()}
-            st.toast("✅ Đã kích hoạt tường lửa V45 chống tin giả thành công!")
+            st.toast("✅ Đã kích hoạt hệ thống V46 - Khóa biên độ giá!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
@@ -212,7 +212,7 @@ def send_telegram_all(message):
                       timeout=5)
     except: pass
 
-# --- 🔄 VÒNG LẶP KIỂM TRA ĐỘC QUYỀN V45 ---
+# --- 🔄 VÒNG LẶP KIỂM TRA ĐỘC QUYỀN V46 ---
 current_now = time.time()
 st.write("---")
 
@@ -237,7 +237,7 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # VÒNG 1: Kiểm tra ngưỡng lọc tối thiểu để loại bỏ rác li ti
+        # VÒNG 1: Kiểm tra rào chắn số tiền tối thiểu để bỏ qua các biến động li ti
         if real_usd >= whale_threshold_usd:
             if previous_usd is None:
                 flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
@@ -245,32 +245,39 @@ for target_slug in st.session_state.city_slugs:
                 delta_cash = abs(real_usd - previous_usd)
                 cent_part = round(real_usd - int(real_usd), 2)
                 
-                # 🛡️ THUẬT TOÁN LỌC NÂNG CAO V45: Chống lỗi bể thanh khoản chẵn .00 của Bot thể thao lớn
-                # Lệnh người thật mua gom thực tế (Delta) thường nằm trong khoảng từ $500 đến dưới $35,000 cho một nhịp quét 8 giây.
-                # Nếu delta đột biến quá khủng (Ví dụ nhảy vọt hàng trăm nghìn đô) hoặc đuôi số thập phân lạ => Đều là Bot tạo lập hoặc sàn nạp thêm vốn!
+                # 🛡️ CHIẾN THUẬT KIM CƯƠNG V46: CHẶN BIÊN ĐỘ GIÁ (EDGE LOCK)
+                # Chuyên gia thực thụ chỉ gom hàng khi giá còn thơm tầm trung (5¢ đến 90¢).
+                # Giá vượt quá 90¢ (như 99.95¢) hoặc dưới 5¢ => Kèo đã kết thúc/an bài, lệnh quét là của bot sàn giải thể bể thanh toán!
+                is_price_too_high_or_low = price_cents > 90.0 or price_cents < 5.0
+                
+                # Kiểm tra độ hợp lý của volume đi lệnh của con người trong chu kỳ quét ngắn
                 is_invalid_delta = delta_cash < 350.0 or delta_cash > 35000.0
-                is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta
+                
+                is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
                 
                 if is_bot_pattern:
-                    flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
+                    if is_price_too_high_or_low and delta_cash >= 350.0:
+                        flow_type = "🤖 BOT TẤT TOÁN SÀN (ĐÃ CHẶN)"
+                    else:
+                        flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
                 else:
                     flow_type = "🔥 NGƯỜI THẬT MUA YES"
-                    st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN NGƯỜI THẬT ĐẬP TIỀN 👑 Vị thế: {mốc_đấu} | Số tiền biến động: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN CHUYÊN GIA GOM HÀNG SỚM 👑 Vị thế: {mốc_đấu} | Tiền vào ròng: ${delta_cash:,.2f} | Giá: {price_cents}¢</div>', unsafe_allow_html=True)
                     
-                    last_alert_time = st.session_state.last_whale_alert_v45.get(history_key, 0)
+                    last_alert_time = st.session_state.last_whale_alert_v46.get(history_key, 0)
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👤 *BÁO CÁO DÒNG TIỀN TỰ NHIÊN (NGƯỜI THẬT) V45* 👤\n\n"
+                            f"👤 *BÁO CÁO DÒNG TIỀN TỰ NHIÊN (CHUYÊN GIA) V46* 👤\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Vị thế mốc chọn:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
-                            f"💵 *Mức giá:* `{price_cents}¢`\n"
+                            f"💵 *Mức giá gom hợp lý:* `{price_cents}¢`\n"
                             f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
                             f"📊 *Tổng vốn vị thế:* `${real_usd:,.2f}`\n\n"
-                            f"🛡️ _Radar V45: Đã kích hoạt thuật toán Delta chặn đứng lỗi bể thanh khoản chẵn của bot sàn._"
+                            f"🛡️ _Radar V46: Đã kích hoạt lớp Edge Lock chặn đứng các báo động ảo khi giá chạm đỉnh 99¢ tất toán._"
                         )
                         send_telegram_all(urgent_msg)
-                        st.session_state.last_whale_alert_v45[history_key] = current_now
+                        st.session_state.last_whale_alert_v46[history_key] = current_now
         
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
@@ -278,6 +285,6 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Tường lửa Radar V45 đang giám sát thị trường bảo mật.")
+st.info(f"⚙️ Tường lửa Edge Lock Radar V46 đang chạy ngầm bảo mật.")
 time.sleep(refresh_rate)
 st.rerun()
