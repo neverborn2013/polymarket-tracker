@@ -5,9 +5,9 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Unlimited Tracker V39", layout="wide")
+st.set_page_config(page_title="Polymarket Free-Format Tracker V40", layout="wide")
 
-# --- 🎨 CSS HIỆU ỨNG GIAO DIỆN ---
+# --- 🎨 CSS INTERFACE ---
 st.markdown(
     """
     <style>
@@ -41,55 +41,55 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🚀 POLYMARKET TRACKER V39 - UNLIMITED LINKS (YES ONLY)")
+st.title("🚀 POLYMARKET TRACKER V40 - TEXT-LIST LINKS (YES ONLY)")
 
-# --- 🔐 KHỞI TẠO TRẠNG THÁI HỆ THỐNG ---
-if "last_whale_alert_v39" not in st.session_state:
-    st.session_state.last_whale_alert_v39 = {}
+# --- 🔐 STATE INITIALIZATION ---
+if "last_whale_alert_v40" not in st.session_state:
+    st.session_state.last_whale_alert_v40 = {}
 if "price_history" not in st.session_state:
     st.session_state.price_history = {}
 
 # =====================================================================
-# 🎯 KHU VỰC THÊM LINK CỐ ĐỊNH (BẠN CÓ THỂ THÊM BAO NHIÊU LINK TÙY THÍCH VÀO ĐÂY)
-# Mỗi link đặt trong một dấu ngoặc kép và cách nhau bằng dấu phẩy
+# 🎯 KHU VỰC DÁN LINK THOẢI MÁI (MỖI DÒNG MỘT LINK - KHÔNG CẦN DẤU NGOẶC)
+# Bạn muốn thêm bao nhiêu link thì cứ xuống dòng dán bình thường vào đây.
+# Không lo lỗi viết sai dấu ngoặc kép trên iPhone nữa!
 # =====================================================================
-default_urls = [
-    "https://polymarket.com/event/highest-temperature-in-tokyo-on-june-22-2026",
-    "https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026",
-    "https://polymarket.com/event/highest-temperature-in-singapore-on-june-22-2026",
-    "https://polymarket.com/event/highest-temperature-in-new-york-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-london-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-22-2026',
-    "https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-22-2026",
-    "https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-22-202"',
-    "https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026",
-    # Bạn có thể copy dán thêm các link thứ 5, thứ 6, thứ 10 xuống dưới này...
-]
+RAW_URL_LIST = """
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-22-2026
+    https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
+   https://polymarket.com/event/highest-temperature-in-singapore-on-june-22-2026 
+   https://polymarket.com/event/highest-temperature-in-new-york-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-22-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-22-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-22-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-22-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-22-2026
+  https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-22-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-22-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-22-20226 
+  https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-22-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-22-2026    
+https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-22-2026 
+   https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-22-20226 
+  https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-22-2026
+   https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-22-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-22-2026
+  https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-22-2026
+ https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-22-2026   
+https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-22-2026   
+https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-22-2026    
+https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-22-202
+ https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026
+"""
 
 def extract_slug(url_str):
     try:
@@ -101,54 +101,54 @@ def extract_slug(url_str):
         return path_parts[-1]
     except: return None
 
-# Tự động chuyển đổi mảng URL mặc định thành danh sách các Slug để hệ thống xử lý
-default_cities = [extract_slug(u) for u in default_urls if extract_slug(u)]
+# Tự động lọc và xử lý danh sách chuỗi thô thành mảng liên kết chuẩn
+default_cities = []
+for line in RAW_URL_LIST.strip().split("\n"):
+    slug = extract_slug(line)
+    if slug: default_cities.append(slug)
 
 if "city_slugs" not in st.session_state:
     st.session_state.city_slugs = default_cities
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 1500  # Đặt mặc định hẳn $1500 để lọc bot sàn hiệu quả
+    st.session_state.whale_threshold = 1500  # Ngưỡng mặc định 1500 để chặn bot mồi hiệu quả
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
-    st.session_state.tg_token = "8805371373:AAGkYYnNqHPPdFy3kRiOGyT2-ZDyaewaa3M"
+    st.session_state.tg_token = "8805371373:AAGkYYnNqHPPdFyI8XFh3S_7WpW5D87uP6k"
 
-# Thiết lập phòng chat ID mặc định
-default_routing = {
-    "default": "-1004312043313"
-}
+default_routing = {"default": "-1004312043313"}
 if "channel_routing" not in st.session_state:
     st.session_state.channel_routing = default_routing
 
-# --- 🛠️ SIDEBAR: CẤU HÌNH BỘ LỌC ---
+# --- 🛠️ SIDEBAR CONFIG ---
 with st.sidebar:
     with st.form(key="config_form"):
-        st.header("🔌 Cấu hình Telegram")
+        st.header("🔌 Telegram Setup")
         tg_token_input = st.text_input("Bot Token:", value=st.session_state.tg_token, type="password")
-        id_def = st.text_input("ID Kênh Nhận Tin (Mặc định):", value=st.session_state.channel_routing.get("default", ""))
+        id_def = st.text_input("ID Kênh Nhận Tin:", value=st.session_state.channel_routing.get("default", ""))
 
         st.write("---")
-        st.header("🛡️ Bộ lọc nâng cao")
+        st.header("🛡️ Filters")
         threshold_input = st.slider("Ngưỡng tiền lọc Cá Mập ($):", 50, 5000, value=st.session_state.whale_threshold, step=50)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="💾 CẬP NHẬT ĐỒNG BỘ V39", use_container_width=True)
+        submit_button = st.form_submit_button(label="💾 CẬP NHẬT ĐỒNG BỘ V40", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
             st.session_state.refresh_rate = refresh_input
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_routing = {"default": id_def.strip()}
-            st.toast("✅ Đã áp dụng bộ lọc mới!")
+            st.toast("✅ Đã áp dụng cấu hình đồng bộ!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
 refresh_rate = st.session_state.refresh_rate
 
-# --- 📝 HIỂN THỊ DANH SÁCH LINK ĐANG CHẠY ---
+# --- 📝 INTERFACE LIST DISPLAY ---
 st.subheader(f"📋 Hệ thống đang quét ngầm liên tục {len(st.session_state.city_slugs)} link kèo dưới đây:")
 cities_text = st.text_area(
-    "Danh sách link hiện tại (Bạn có thể thêm bớt nhanh tại đây, nhưng muốn cố định vĩnh viễn hãy sửa biến default_urls trong code gốc):", 
+    "Danh sách link hiện tại:", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.city_slugs]),
     height=150
 )
@@ -160,7 +160,7 @@ for line in cities_text.split("\n"):
 
 if current_input_slugs and current_input_slugs != st.session_state.city_slugs:
     st.session_state.city_slugs = current_input_slugs
-    st.toast("🔄 Đã cập nhật danh sách mốc thị trường!")
+    st.toast("🔄 Đã ghi nhận danh sách link mới!")
 
 def get_polymarket_hot_zones(slug):
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -215,7 +215,7 @@ def send_telegram_all(message):
     except: 
         pass
 
-# --- VÒNG LẶP QUÉT XOAY VÒNG KHÔNG GIỚI HẠN LINK ---
+# --- MAIN LOOP ---
 current_now = time.time()
 st.write("---")
 
@@ -247,11 +247,11 @@ for target_slug in st.session_state.city_slugs:
                 flow_type = "🔥 CÓ NGƯỜI MUA YES"
                 st.markdown(f'<div class="whale-real-alert">🟢 PHÁT HIỆN CÁ MẬP YES 🟢 Mốc: {mốc_nhiệt} | Số tiền: ${real_usd:,.2f}</div>', unsafe_allow_html=True)
                 
-                last_alert_time = st.session_state.last_whale_alert_v39.get(history_key, 0)
+                last_alert_time = st.session_state.last_whale_alert_v40.get(history_key, 0)
                 if current_now - last_alert_time > 15:
                     urgent_msg = (
                         f"📊 *BÁO ĐỘNG BIẾN ĐỘNG: MUA ĐỒNG Ý (YES)* 📊\n\n"
-                        f"🏙️ *Thị trường:* {title}\n"
+                        f"🏙 *Thị trường:* {title}\n"
                         f"📌 *Vị thế mốc:* `{mốc_nhiệt}`\n"
                         f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
                         f"💵 *Mức giá:* `{price_cents}¢`\n"
@@ -259,7 +259,7 @@ for target_slug in st.session_state.city_slugs:
                         f"📬 _Hệ thống bảo vệ: Chỉ lọc lệnh YES trị giá cao._"
                     )
                     send_telegram_all(urgent_msg)
-                    st.session_state.last_whale_alert_v39[history_key] = current_now
+                    st.session_state.last_whale_alert_v40[history_key] = current_now
         
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
@@ -267,6 +267,6 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Radar V39 đang quét tự động liên tục. Vòng lặp {refresh_rate} giây.")
+st.info(f"⚙️ Radar V40 đang hoạt động hoàn toàn tự động. Vòng lặp {refresh_rate} giây.")
 time.sleep(refresh_rate)
 st.rerun()
