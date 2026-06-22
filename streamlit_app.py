@@ -112,7 +112,9 @@ https://polymarket.com/vi/sports/atp/atp-collign-cerund-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-tex-mia-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-phi-wsh-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-chc-nym-2026-06-22
-
+https://polymarket.com/vi/sports/wnba/wnba-tor-atl-2026-06-22
+https://polymarket.com/vi/sports/wnba/wnba-chi-conn-2026-06-22
+https://polymarket.com/vi/sports/wnba/wnba-phx-ind-2026-06-22
 """
 
 def extract_slug(url_str):
