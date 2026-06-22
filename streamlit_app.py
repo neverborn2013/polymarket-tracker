@@ -87,6 +87,7 @@ https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-22-2026
 https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-22-2026  
  https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-22-202  
  https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026
+ https://polymarket.com/vi/sports/wta-doubles/wta-doubles-alexnos-eikegle-2026-06-20
 """
 
 def extract_slug(url_str):
