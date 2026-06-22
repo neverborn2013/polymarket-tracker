@@ -56,6 +56,13 @@ https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026
  https://polymarket.com/event/highest-temperature-in-new-york-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-london-on-june-22-2026   
  https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-23-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-taipei-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-beijing-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-chongqing-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-wuhan-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-lucknow-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-qingdao-on-june-23-2026
   https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-23-2026 
   https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-23-2026 
   https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-23-2026  
