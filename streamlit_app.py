@@ -53,42 +53,42 @@ if "price_history" not in st.session_state:
 # Mỗi dòng một đường dẫn link, hệ thống tự bóc tách xoay vòng quét ngầm.
 # =====================================================================
 RAW_URL_LIST = """
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-22-2026
-    https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
-   https://polymarket.com/event/highest-temperature-in-singapore-on-june-22-2026
-   https://polymarket.com/event/highest-temperature-in-new-york-on-june-22-2026 
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-22-2026 
+  https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
+  https://polymarket.com/event/highest-temperature-in-singapore-on-june-22-2026  
+ https://polymarket.com/event/highest-temperature-in-new-york-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-london-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-22-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-22-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-22-2026
-  https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-22-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-22-2026
+ https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-22-2026  
   https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-22-2026 
  https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-22-20226 
-  https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026
-  https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-22-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-22-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026  
+https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-22-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-22-2026    
 https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-22-2026
-   https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-22-20226
-  https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-22-2026
-   https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-22-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-22-2026  
- https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-22-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-22-20226
+ https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-22-2026
+ https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-22-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-22-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-22-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-22-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-22-2026   
+https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-22-2026 
  https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-22-2026    
 https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-22-2026   
 https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-22-2026    
 https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-22-2026  
  https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-22-202   
- https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026
- https://polymarket.com/vi/sports/wta/wta-tauson-shnaide-2026-06-21
- https://polymarket.com/vi/sports/wta/wta-jovic-wa-2026-06-21
+https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026 
+https://polymarket.com/vi/sports/wta/wta-tauson-shnaide-2026-06-21 
+https://polymarket.com/vi/sports/wta/wta-jovic-wa-2026-06-21
 """
 
 def extract_slug(url_str):
@@ -106,7 +106,7 @@ default_cities = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n"
 if "city_slugs" not in st.session_state:
     st.session_state.city_slugs = default_cities
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 2500  # Ngưỡng tối thiểu $2500 chặn đứng bot rác volume mỏng
+    st.session_state.whale_threshold = 2500  # Ngưỡng tối thiểu mặc định chặn đứng bot rác volume mỏng
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
