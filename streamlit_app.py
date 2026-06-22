@@ -98,6 +98,9 @@ https://polymarket.com/vi/sports/wta/wta-tauson-shnaide-2026-06-21
 https://polymarket.com/vi/sports/wta/wta-jovic-wa-2026-06-21
 https://polymarket.com/vi/sports/world-cup/fifwc-arg-aut-2026-06-22
 https://polymarket.com/vi/sports/world-cup/fifwc-fra-irq-2026-06-22
+https://polymarket.com/vi/sports/mlb/mlb-tor-chc-2026-06-21
+https://polymarket.com/vi/sports/mlb/mlb-nyy-det-2026-06-22
+https://polymarket.com/vi/sports/mlb/mlb-kc-tb-2026-06-22
 """
 
 def extract_slug(url_str):
