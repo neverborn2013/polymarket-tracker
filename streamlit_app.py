@@ -50,20 +50,22 @@ if "price_history" not in st.session_state:
 
 # --- LINK MẶC ĐỊNH SĂN SONG SONG THỂ THAO & THỜI TIẾT ---
 RAW_URL_LIST = """
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-22-2026 
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026 
   https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
-  https://polymarket.com/event/highest-temperature-in-singapore-on-june-22-2026  
+  https://polymarket.com/event/highest-temperature-in-singapore-on-june-23-2026  
  https://polymarket.com/event/highest-temperature-in-new-york-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-london-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-22-2026  
- https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-22-2026
- https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-22-2026  
- https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-22-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-22-2026 
- https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-22-20226 
+ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-23-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-23-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-23-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-23-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-23-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-23-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-23-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-23-20226 
+ https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-23-2026
+ https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-23-2026
  https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026  
 https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-22-2026   
  https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-22-2026 
