@@ -71,6 +71,7 @@ https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026
  https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-23-2026  
   https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-23-2026 
  https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-23-20226 
+ https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-23-2026
  https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-23-2026
  https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-23-2026
  https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026  
