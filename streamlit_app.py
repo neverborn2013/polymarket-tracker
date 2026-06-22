@@ -89,6 +89,8 @@ https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-22-2026
 https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026 
 https://polymarket.com/vi/sports/wta/wta-tauson-shnaide-2026-06-21 
 https://polymarket.com/vi/sports/wta/wta-jovic-wa-2026-06-21
+https://polymarket.com/vi/sports/world-cup/fifwc-arg-aut-2026-06-22
+https://polymarket.com/vi/sports/world-cup/fifwc-fra-irq-2026-06-22
 """
 
 def extract_slug(url_str):
