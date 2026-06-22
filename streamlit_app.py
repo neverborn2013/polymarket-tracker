@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Anti-Bot Tracker V42", layout="wide")
+st.set_page_config(page_title="Polymarket Anti-Bot Tracker V43", layout="wide")
 
 # --- 🎨 CSS INTERFACE ---
 st.markdown(
@@ -41,20 +41,21 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🛡️ POLYMARKET RADAR V42 - CHỈ LỌC NGƯỜI THẬT XUỐNG TIỀN TRÒN")
+st.title("🛡️ POLYMARKET RADAR V43 - TƯỜNG LỬA CHỐNG BÁO GIẢ")
 
-if "last_whale_alert_v42" not in st.session_state:
-    st.session_state.last_whale_alert_v42 = {}
+if "last_whale_alert_v43" not in st.session_state:
+    st.session_state.last_whale_alert_v43 = {}
 if "price_history" not in st.session_state:
     st.session_state.price_history = {}
 
 # =====================================================================
 # 🎯 DANH SÁCH LINK QUÉT NGẦM CỐ ĐỊNH (MỖI DÒNG MỘT LINK TỰ DO)
+# Bạn muốn thêm/bớt link chỉ cần sửa trực tiếp tại đây trên GitHub.
 # =====================================================================
 RAW_URL_LIST = """
 https://polymarket.com/event/highest-temperature-in-tokyo-on-june-22-2026
     https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
-   https://polymarket.com/event/highest-temperature-in-singapore-on-june-22-2026 
+   https://polymarket.com/event/highest-temperature-in-singapore-on-june-22-2026
    https://polymarket.com/event/highest-temperature-in-new-york-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-london-on-june-22-2026   
  https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-22-2026  
@@ -64,27 +65,27 @@ https://polymarket.com/event/highest-temperature-in-tokyo-on-june-22-2026
   https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-22-2026
   https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-22-2026  
   https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-22-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-22-2026  
  https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-22-20226 
-  https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-22-2026
   https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-22-2026  
   https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-22-2026 
   https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-22-2026    
 https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-22-2026 
-   https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-22-20226 
+  https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-22-2026
+   https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-22-20226  
   https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-22-2026
    https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-22-2026   
  https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-22-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-22-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-22-2026  
   https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-22-2026   
  https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-22-2026  
  https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-22-2026   
- https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-22-2026    
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-22-2026   
 https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-22-2026   
 https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-22-2026    
 https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-22-2026  
- https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-22-202   
+ https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-22-202  
  https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-22-2026
 """
 
@@ -103,7 +104,7 @@ default_cities = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n"
 if "city_slugs" not in st.session_state:
     st.session_state.city_slugs = default_cities
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 2500  # CHẶN ĐỨNG BOT: Tự động nâng ngưỡng tối thiểu lên $2500
+    st.session_state.whale_threshold = 2500  # Ngưỡng cứng chặn đứng dòng tiền mồi của bot sàn
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
@@ -121,18 +122,18 @@ with st.sidebar:
         id_def = st.text_input("ID Kênh Nhận Tin Tổng:", value=st.session_state.channel_routing.get("default", ""))
 
         st.write("---")
-        st.header("🛡️ Bộ lọc tối cao V42")
+        st.header("🛡️ Bộ lọc tối cao V43")
         threshold_input = st.slider("Ngưỡng tiền lọc Cá Mập ($):", 50, 5000, value=st.session_state.whale_threshold, step=50)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="💾 KÍCH HOẠT HỆ THỐNG V42", use_container_width=True)
+        submit_button = st.form_submit_button(label="💾 KÍCH HOẠT HỆ THỐNG V43", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
             st.session_state.refresh_rate = refresh_input
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_routing = {"default": id_def.strip()}
-            st.toast("✅ Radar V42 đã được đồng bộ!")
+            st.toast("✅ Radar V43 đã được đồng bộ!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
@@ -226,36 +227,37 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
+        # TƯỜNG LỬA 1: Bắt buộc số tiền thực tế tổng cửa YES phải vượt qua ngưỡng lọc Cá Mập đã thiết lập
         if real_usd >= whale_threshold_usd:
-            # Thuật toán tính toán bước nhảy tiền thực tế giữa 2 chu kỳ quét
-            delta_cash = abs(real_usd - (previous_usd if previous_usd is not None else 0))
-            
-            # 🚨 BỘ LỌC TOÁN HỌC V42: 
-            # - Nếu số tiền đổi lẻ chi li từng xu (.60, .25...) -> Tỷ lệ cao là do thuật toán Bot sàn mồi tự động
-            # - Hoặc nếu bước nhảy dòng tiền quá nhỏ (dưới $350) giữa 2 phiên quét -> Bot đang tỉa thanh khoản nền
-            cent_part = round(real_usd - int(real_usd), 2)
-            is_bot_pattern = cent_part not in [0.0, 0.5] or delta_cash < 350.0
-            
-            if previous_usd is not None and is_bot_pattern:
-                flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
+            if previous_usd is None:
+                # Tránh báo động giả chu kỳ đầu khi vừa cập nhật danh sách link hoặc chạy ứng dụng
+                flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
             else:
-                # ĐỦ ĐIỀU KIỆN: Tiền nhảy vọt mạnh mẽ và khớp dòng tiền khối lượng lớn của người thật
-                flow_type = "🔥 NGƯỜI THẬT MUA YES"
-                st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN NGƯỜI THẬT XUỐNG TIỀN TRÒN 👑 Mốc: {mốc_nhiệt} | Số tiền: ${real_usd:,.2f}</div>', unsafe_allow_html=True)
+                delta_cash = abs(real_usd - previous_usd)
+                cent_part = round(real_usd - int(real_usd), 2)
                 
-                last_alert_time = st.session_state.last_whale_alert_v42.get(history_key, 0)
-                if current_now - last_alert_time > 20:
-                    urgent_msg = (
-                        f"👤 *BÁO CÁO DÒNG TIỀN TỰ NHIÊN (NGƯỜI THẬT)* 👤\n\n"
-                        f"🏙️ *Thị trường:* {title}\n"
-                        f"📌 *Mốc cược vị thế:* `{mốc_nhiệt}`\n"
-                        f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
-                        f"💵 *Mức giá:* `{price_cents}¢`\n"
-                        f"💰 *Tổng tiền dòng tiền YES:* *${real_usd:,.2f}*\n"
-                        f"🛡️ _Radar V42: Đã lọc bỏ toàn bộ các biến động tiền lẻ của Bot sàn._"
-                    )
-                    send_telegram_all(urgent_msg)
-                    st.session_state.last_whale_alert_v42[history_key] = current_now
+                # TƯỜNG LỬA 2: Lọc thuật toán dịch chuyển dòng tiền nhỏ giọt của Bot
+                is_bot_pattern = cent_part not in [0.0, 0.5] or delta_cash < 350.0
+                
+                if is_bot_pattern:
+                    flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
+                else:
+                    flow_type = "🔥 NGƯỜI THẬT MUA YES"
+                    st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN NGƯỜI THẬT ĐẬP TIỀN 👑 Mốc: {mốc_nhiệt} | Số tiền: ${real_usd:,.2f}</div>', unsafe_allow_html=True)
+                    
+                    last_alert_time = st.session_state.last_whale_alert_v43.get(history_key, 0)
+                    if current_now - last_alert_time > 20:
+                        urgent_msg = (
+                            f"👤 *BÁO CÁO DÒNG TIỀN TỰ NHIÊN (NGƯỜI THẬT)* 👤\n\n"
+                            f"🏙️ *Thị trường:* {title}\n"
+                            f"📌 *Mốc cược vị thế:* `{mốc_nhiệt}`\n"
+                            f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
+                            f"💵 *Mức giá:* `{price_cents}¢`\n"
+                            f"💰 *Tổng tiền dòng tiền YES:* *${real_usd:,.2f}*\n"
+                            f"🛡️ _Radar V43: Hệ thống tường lửa kép bảo vệ tối đa._"
+                        )
+                        send_telegram_all(urgent_msg)
+                        st.session_state.last_whale_alert_v43[history_key] = current_now
         
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
@@ -263,6 +265,6 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Radar V42 đang hoạt động ổn định. Bộ lọc tối cao chống Bot sàn đã được kích hoạt.")
+st.info(f"⚙️ Radar V43 bảo mật đang hoạt động. Đã khóa toàn bộ lỗ hổng báo động giả ở các thị trường volume thấp.")
 time.sleep(refresh_rate)
 st.rerun()
