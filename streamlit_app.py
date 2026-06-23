@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V48.4 Target-Only", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V48.5 Pro", layout="wide")
 
 # --- 🎨 CSS INTERFACE ---
 st.markdown(
@@ -36,14 +36,14 @@ st.markdown(
         margin-bottom: 8px;
         font-weight: bold;
         font-size: 14px;
-        border-left: 5px solid #e67e22;
+        border-left: 5px solid #2ecc71;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("⚽ POLYMARKET RADAR V48.4 - CHỈ BÁO CHỐT/CẮT LỖ CHO KÈO ĐÃ BÁO TELE")
+st.title("⚽ POLYMARKET RADAR V48.5 - CHỈ CẢNH BÁO CHỐT/CẮT KHI ĐÃ BÁO TELE")
 
 # Khởi tạo bộ nhớ đệm hệ thống
 if "last_whale_alert_v47" not in st.session_state:
@@ -55,57 +55,55 @@ if "cents_price_history" not in st.session_state:
 if "last_signal_time" not in st.session_state:
     st.session_state.last_signal_time = {}
 
-# 🔥 QUAN TRỌNG: Danh sách lưu những kèo ĐÃ TỪNG phát tin Telegram dòng tiền
-if "reported_tele_markets" not in st.session_state:
-    st.session_state.reported_tele_markets = set()
+# 🔥 QUAN TRỌNG: Khởi tạo danh mục các kèo ĐÃ BÁO TELEGRAM (Dùng list để tránh lỗi Streamlit rerun)
+if "reported_tele_keys" not in st.session_state:
+    st.session_state.reported_tele_keys = []
 
 RAW_URL_LIST = """
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026 
-  https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
-  https://polymarket.com/event/highest-temperature-in-singapore-on-june-23-2026  
- https://polymarket.com/event/highest-temperature-in-new-york-on-june-23-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-23-2026   
- https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-23-2026 
- https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-taipei-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-beijing-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-chongqing-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-wuhan-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-lucknow-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-qingdao-on-june-23-2026
-  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-23-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-23-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-23-2026  
- https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-23-2026  
- https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-23-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-23-2026 
- https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-23-20226 
- https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-23-2026  
- https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-23-2026
-https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-23-2026   
- https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-23-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-23-2026    
-https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-23-2026 
- https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-23-2026 
- https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-23-20226
- https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-23-2026
- https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-23-2026   
- https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-23-2026  
- https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-23-2026   
- https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-23-2026   
- https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-32-2026   
-https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-23-2026 
- https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-23-2026    
-https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-23-2026   
-https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-23-2026    
-https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-23-2026  
- https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-23-202   
-https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-23-2026 
-https://polymarket.com/vi/sports/wta/wta-tauson-shnaide-2026-06-21 
-https://polymarket.com/vi/sports/wta/wta-jovic-wa-2026-06-21
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-24-2026 
+  https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
+  https://polymarket.com/event/highest-temperature-in-singapore-on-june-24-2026  
+ https://polymarket.com/event/highest-temperature-in-new-york-on-june-24-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-24-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-24-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-taipei-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-beijing-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-chongqing-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-wuhan-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-lucknow-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-qingdao-on-june-24-2026
+  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-24-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-24-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-24-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-24-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-24-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-24-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-24-20226 
+ https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-24-2026
+https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-24-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-24-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-24-2026    
+https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-24-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-24-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-24-20226
+ https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-24-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-24-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-24-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-24-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-24-2026   
+https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-24-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-24-2026    
+https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-24-2026   
+https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-24-2026    
+https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-24-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-24-202   
+https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-24-2026 
 https://polymarket.com/vi/sports/world-cup/fifwc-arg-aut-2026-06-22
 https://polymarket.com/vi/sports/world-cup/fifwc-fra-irq-2026-06-22
 https://polymarket.com/vi/sports/world-cup/fifwc-nor-sen-2026-06-22
@@ -120,15 +118,6 @@ https://polymarket.com/vi/esports/valorant/vcl/val-ep1-bar-2026-06-22
 https://polymarket.com/vi/esports/cs2/draculan/cs2-sashi-9ine-2026-06-23
 https://polymarket.com/vi/sports/atp/atp-collign-cerund-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-tex-mia-2026-06-22
-https://polymarket.com/vi/sports/mlb/mlb-phi-wsh-2026-06-22
-https://polymarket.com/vi/sports/mlb/mlb-chc-nym-2026-06-22
-https://polymarket.com/vi/sports/wnba/wnba-tor-atl-2026-06-22
-https://polymarket.com/vi/sports/wnba/wnba-chi-conn-2026-06-22
-https://polymarket.com/vi/sports/wnba/wnba-phx-ind-2026-06-22
-https://polymarket.com/vi/sports/wnba/wnba-dal-sea-2026-06-22
-https://polymarket.com/vi/sports/mlb/mlb-atl-sd-2026-06-22
-https://polymarket.com/vi/sports/mlb/mlb-bos-col-2026-06-22
-https://polymarket.com/vi/sports/mlb/mlb-bal-laa-2026-06-22
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/us-gdp-q1-2026-final-reading
@@ -158,9 +147,9 @@ https://polymarket.com/event/highest-temperature-in-new-york-on-june-24-2026
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-above-210-on-june-26-2026
-https://polymarket.com/vi/event/what-price-will-ethereum-hit-on-june-23
-https://polymarket.com/vi/event/what-price-will-bitcoin-hit-on-june-23
-https://polymarket.com/vi/event/what-price-will-xrp-hit-on-june-23
+https://polymarket.com/vi/event/what-price-will-ethereum-hit-on-june-24
+https://polymarket.com/vi/event/what-price-will-bitcoin-hit-on-june-24
+https://polymarket.com/vi/event/what-price-will-xrp-hit-on-june-24
 """
 
 def extract_slug(url_str):
@@ -190,8 +179,8 @@ if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
 with st.sidebar:
-    with st.form(key="config_form_v48_4"):
-        st.header("🔌 Cấu hình Hệ thống V48.4")
+    with st.form(key="config_form_v48_5"):
+        st.header("🔌 Cấu hình Hệ thống V48.5")
         tg_token_input = st.text_input("Bot Token chung:", value=st.session_state.tg_token, type="password")
         
         st.write("---")
@@ -201,10 +190,10 @@ with st.sidebar:
 
         st.write("---")
         st.header("🛡️ Bộ lọc")
-        threshold_input = st.slider("Ngưỡng phân tách Cá Mập ($):", 1000, 5000, value=st.session_state.whale_threshold, step=100)
+        threshold_input = st.slider("Ngưỡng Cá Mập ($):", 1000, 5000, value=st.session_state.whale_threshold, step=100)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="🚀 KÍCH HOẠT BẢN V48.4 TARGET", use_container_width=True)
+        submit_button = st.form_submit_button(label="🚀 KÍCH HOẠT BẢN V48.5 PRO", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -212,15 +201,15 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("✅ Đã kích hoạt bộ lọc khóa kèo thông minh!")
+            st.toast("✅ Đã đồng bộ cấu hình danh mục giám sát mục tiêu!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
 refresh_rate = st.session_state.refresh_rate
 
-st.subheader(f"📋 Radar đang giám sát {len(st.session_state.city_slugs)} thị trường lớn:")
+st.subheader(f"📋 Radar đang quét ngầm {len(st.session_state.city_slugs)} thị trường:")
 cities_text = st.text_area(
-    "Đường dẫn nâng cấp quét ngầm:", 
+    "Đường dẫn sự kiện:", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.city_slugs]),
     height=130
 )
@@ -290,7 +279,7 @@ for target_slug in st.session_state.city_slugs:
     df = data["df"]
     analysis_labels = []
     
-    st.markdown(f'<div class="city-header">📊 RADAR MỤC TIÊU: {title.upper()}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="city-header">🎯 PHÂN TÍCH THỊ TRƯỜNG: {title.upper()}</div>', unsafe_allow_html=True)
     
     for _, row in df.iterrows():
         mốc_đấu = row["Bin"]
@@ -304,40 +293,40 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # --- 🛡️ LOGIC KIỂM TRA CHỐT / CẮT LỖ (CHỈ ÁP DỤNG NẾU KÈO ĐÃ TỪNG LÊN TELE) ---
+        # --- 🛡️ BỘ LỌC CHỐT LỜI / CẮT LỖ (CHỈ KÍCH HOẠT NẾU KÈO ĐÃ TỪNG BÁO TELEGRAM) ---
         if previous_cents is not None:
-            # Điều kiện 1: Giá đang chạy thực tế (không phải đóng sàn 0 hay 100)
+            # Chặn giá nhảy ảo khi kết thúc trận đấu (0¢ hoặc 100¢)
             if 1.0 < price_cents < 99.0 and 1.0 < previous_cents < 99.0:
                 
-                # Điều kiện Khóa V48.4: Chỉ xử lý nếu nhánh cược này nằm trong bộ nhớ reported_tele_markets
-                if history_key in st.session_state.reported_tele_markets:
+                # 🔥 ĐIỀU KIỆN QUYẾT ĐỊNH: Phải có tên trong bộ nhớ đã báo Tele
+                if history_key in st.session_state.reported_tele_keys:
                     
                     last_sig_time = st.session_state.last_signal_time.get(history_key, 0)
-                    allow_send_signal = (current_now - last_sig_time) > 120 # Khóa chống spam 2 phút
+                    allow_send_signal = (current_now - last_sig_time) > 120 # Chống spam tin trùng trong 2 phút
                     
-                    # 1. Tín hiệu CHỐT LỜI
+                    # 1. Báo Chốt Lời khi chạm/vượt mốc 50¢
                     if previous_cents < 50.0 <= price_cents:
                         if allow_send_signal:
                             alert_tp = (
                                 f"💰 *[CẢNH BÁO: CHỐT LỜI TRONG NGÀY]* 💰\n\n"
                                 f"🏆 *Thị trường:* {title}\n"
                                 f"📌 *Nhánh cược mục tiêu:* `{mốc_đấu}`\n"
-                                f"📈 *Biến động giá:* `{previous_cents}¢` ➡️ ĐẠT MỐC CHỐT LỜI: `{price_cents}¢`\n"
-                                f"🔔 *Hành động:* Kèo đã báo gom trước đó đã đạt đích, cân nhắc bấm SELL để đút túi!"
+                                f"📈 *Biến động giá:* Giành lợi thế từ `{previous_cents}¢` ➡️ chạm mốc `{price_cents}¢`\n"
+                                f"🔔 *Hành động:* Kèo bạn theo dõi từ Tele đã có lời tốt, xem xét chốt một phần (SELL)!"
                             )
                             send_telegram(st.session_state.channel_vip, alert_tp)
                             send_telegram(st.session_state.channel_ngach, alert_tp)
                             st.session_state.last_signal_time[history_key] = current_now
 
-                    # 2. Tín hiệu CẮT LỖ >= 10 GIÁ
+                    # 2. Báo Cắt Lỗ khi giá sụt mạnh từ 10 GIÁ trở lên (>= 10.0)
                     elif previous_cents > price_cents and (previous_cents - price_cents) >= 10.0:
                         if allow_send_signal:
                             alert_sl = (
-                                f"⚠️ *[CẢNH BÁO: CẮT LỖ KHẨN CẤP]* ⚠️\n\n"
+                                f"⚠️ *[CẢNH BÁO: CẮT LỖ KHẨN CẤP - GIẢM >10 GIÁ]* ⚠️\n\n"
                                 f"🏆 *Thị trường:* {title}\n"
                                 f"📌 *Nhánh cược mục tiêu:* `{mốc_đấu}`\n"
-                                f"📉 *Biến động giá:* Giá sụt sâu từ `{previous_cents}¢` ➡️ rơi xuống `{price_cents}¢` (*Giảm mạnh -{previous_cents - price_cents:.1f}¢*)\n"
-                                f"🚨 *Hành động:* Diễn biến đang bất lợi cho vị thế đã gom, xem xét cắt lỗ ngay!"
+                                f"📉 *Biến động giá:* Bị xả mạnh từ `{previous_cents}¢` ➡️ rơi xuống `{price_cents}¢` (*Giảm -{previous_cents - price_cents:.1f}¢*)\n"
+                                f"🚨 *Hành động:* Diễn biến của vị thế đã gom bất lợi, mở app quản trị rủi ro ngay!"
                             )
                             send_telegram(st.session_state.channel_vip, alert_sl)
                             send_telegram(st.session_state.channel_ngach, alert_sl)
@@ -345,7 +334,7 @@ for target_slug in st.session_state.city_slugs:
 
         st.session_state.cents_price_history[history_key] = price_cents
 
-        # --- 💰 THEO DÕI DÒNG TIỀN VÀ ĐÁNH DẤU KÈO LÊN TELEGRAM ---
+        # --- 💰 PHÂN LOẠI DÒNG TIỀN VÀ ĐĂNG KÝ VÀO DANH SÁCH MỤC TIÊU ---
         if previous_usd is None:
             flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
         else:
@@ -364,14 +353,14 @@ for target_slug in st.session_state.city_slugs:
             else:
                 last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
                 
-                # 1. CÁ VOI KHỦNG VIP
+                # Loại 1: Cá Voi Khủng VIP
                 if delta_cash >= whale_threshold_usd:
                     flow_type = "👑 [VIP] CÁ VOI KHỦNG"
                     st.markdown(f'<div class="whale-real-alert">👑 CÁ VOI VIP GOM HÀNG KHỦNG 👑 Vị thế: {mốc_đấu} | Tiền ròng: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[CÁ VOI KHỦNG VIP] BÁO CÁO DÒNG TIỀN V48.4* 👑\n\n"
+                            f"👑 *[CÁ VOI KHỦNG VIP] BÁO CÁO DÒNG TIỀN V48.5* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
@@ -382,15 +371,16 @@ for target_slug in st.session_state.city_slugs:
                         send_telegram(st.session_state.channel_vip, urgent_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
                         
-                        # 🎯 ĐÁNH DẤU: Nhánh cược này đã phát Tele, từ bây giờ sẽ được bot canh Chốt/Cắt lỗ
-                        st.session_state.reported_tele_markets.add(history_key)
+                        # 🎯 Đăng ký theo dõi chốt/cắt lỗ cho kèo này
+                        if history_key not in st.session_state.reported_tele_keys:
+                            st.session_state.reported_tele_keys.append(history_key)
                         
-                # 2. TÍN HIỆU GOM SỚM NGÁCH
+                # Loại 2: Gom Sớm Ngách
                 elif delta_cash >= 400.0:
                     flow_type = "🐟 [NGÁCH] TÍN HIỆU GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[TÍN HIỆU GOM SỚM] BÁO CÁO DÒNG TIỀN V48.4* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM] BÁO CÁO DÒNG TIỀN V48.5* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
@@ -401,8 +391,9 @@ for target_slug in st.session_state.city_slugs:
                         send_telegram(st.session_state.channel_ngach, ngach_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
                         
-                        # 🎯 ĐÁNH DẤU: Nhánh cược này đã phát Tele, từ bây giờ sẽ được bot canh Chốt/Cắt lỗ
-                        st.session_state.reported_tele_markets.add(history_key)
+                        # 🎯 Đăng ký theo dõi chốt/cắt lỗ cho kèo này
+                        if history_key not in st.session_state.reported_tele_keys:
+                            st.session_state.reported_tele_keys.append(history_key)
                 else:
                     flow_type = f"⚪ Nhỏ lẻ quá bé (${delta_cash:.2f})"
         
@@ -412,7 +403,7 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-# Hiển thị số lượng kèo đang được đưa vào danh sách theo dõi chốt/cắt lỗ ngay trên giao diện
-st.info(f"⚙️ Bản V48.4 thông minh: Đang kích hoạt chế độ Target-Only. Đang giám sát Chốt/Cắt lỗ cho {len(st.session_state.reported_tele_markets)} nhánh cược đã từng báo lên Tele.")
+# Hiển thị số lượng danh mục mục tiêu đang bám đuổi
+st.success(f"🛡️ Radar V48.5 Bảo Mật: Đang bám sát Chốt/Cắt lỗ cho {len(st.session_state.reported_tele_keys)} nhánh cược chiến lược (Đã phát Tele).")
 time.sleep(refresh_rate)
 st.rerun()
