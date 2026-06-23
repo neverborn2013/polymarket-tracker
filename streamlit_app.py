@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V48.6 Hybrid", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V48.7 Absolute", layout="wide")
 
 # --- 🎨 CSS INTERFACE ---
 st.markdown(
@@ -43,9 +43,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("⚽ POLYMARKET RADAR V48.6 - LOGIC GÁC CỔNG LAI (HYBRID STOP-LOSS)")
+st.title("⚽ POLYMARKET RADAR V48.7 - CHỐT CHẶN TỬ THẦN (ABSOLUTE GATES)")
 
-# Khởi tạo bộ nhớ đệm hệ thống
+# Khởi tạo bộ nhớ đệm trạng thái hệ thống
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
 if "price_history" not in st.session_state:
@@ -53,7 +53,7 @@ if "price_history" not in st.session_state:
 if "cents_price_history" not in st.session_state:
     st.session_state.cents_price_history = {}
 if "entry_price_history" not in st.session_state:
-    st.session_state.entry_price_history = {}  # 🔥 Lưu mức giá tại thời điểm phát tin Tele làm mốc gốc
+    st.session_state.entry_price_history = {}  # 🔥 Lưu mức giá gốc lúc gom hàng để đối chiếu cố định
 if "last_signal_time" not in st.session_state:
     st.session_state.last_signal_time = {}
 if "reported_tele_keys" not in st.session_state:
@@ -112,12 +112,6 @@ https://polymarket.com/vi/sports/world-cup/fifwc-prt-uzb-2026-06-23
 https://polymarket.com/vi/sports/world-cup/fifwc-eng-gha-2026-06-23
 https://polymarket.com/vi/sports/world-cup/fifwc-pan-hrv-2026-06-23
 https://polymarket.com/vi/sports/world-cup/fifwc-col-cdr-2026-06-23
-https://polymarket.com/vi/esports/valorant/vcl/val-ucam-pl-2026-06-22
-https://polymarket.com/vi/esports/cs2/united21/cs2-cls1-mil-2026-06-23
-https://polymarket.com/vi/esports/valorant/vcl/val-ep1-bar-2026-06-22
-https://polymarket.com/vi/esports/cs2/draculan/cs2-sashi-9ine-2026-06-23
-https://polymarket.com/vi/sports/atp/atp-collign-cerund-2026-06-22
-https://polymarket.com/vi/sports/mlb/mlb-tex-mia-2026-06-22
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/us-gdp-q1-2026-final-reading
@@ -150,11 +144,6 @@ https://polymarket.com/event/solana-above-210-on-june-26-2026
 https://polymarket.com/vi/event/what-price-will-ethereum-hit-on-june-24
 https://polymarket.com/vi/event/what-price-will-bitcoin-hit-on-june-24
 https://polymarket.com/vi/event/what-price-will-xrp-hit-on-june-24
-https://polymarket.com/vi/sports/wta/wta-sonmez-dart-2026-06-23
-https://polymarket.com/vi/sports/wta/wta-krueger-knutson-2026-06-23
-https://polymarket.com/vi/sports/wta/wta-bejlek-siegemu-2026-06-22
-https://polymarket.com/vi/sports/wta/wta-sonmez-dart-2026-06-23
-https://polymarket.com/vi/sports/mlb/mlb-bos-col-2026-06-23
 https://polymarket.com/vi/event/elon-musk-of-tweets-june-19-june-26
 """
 
@@ -185,8 +174,8 @@ if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
 with st.sidebar:
-    with st.form(key="config_form_v48_6"):
-        st.header("🔌 Cấu hình Hệ thống V48.6")
+    with st.form(key="config_form_v48_7"):
+        st.header("🔌 Cấu hình Hệ thống V48.7")
         tg_token_input = st.text_input("Bot Token chung:", value=st.session_state.tg_token, type="password")
         
         st.write("---")
@@ -195,11 +184,11 @@ with st.sidebar:
         id_ngach_input = st.text_input("ID Kênh Ngách (Gom Sớm):", value=st.session_state.channel_ngach)
 
         st.write("---")
-        st.header("🛡️ Bộ lọc")
+        st.header("🛡️ Bộ lọc rủi ro")
         threshold_input = st.slider("Ngưỡng Cá Mập ($):", 1000, 5000, value=st.session_state.whale_threshold, step=100)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="🚀 ĐỒNG BỘ LOGIC HYBRID", use_container_width=True)
+        submit_button = st.form_submit_button(label="🚀 KÍCH HOẠT ABSOLUTE GATES", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -207,15 +196,15 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("✅ Đã kích hoạt luật cắt lỗ linh hoạt cửa trên/cửa dưới!")
+            st.toast("✅ Đã đồng bộ bộ luật gác cổng tuyệt đối V48.7 thành công!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
 refresh_rate = st.session_state.refresh_rate
 
-st.subheader(f"📋 Radar đang bảo vệ {len(st.session_state.city_slugs)} thị trường chủ lực:")
+st.subheader(f"📋 Radar đang bảo vệ {len(st.session_state.city_slugs)} thị trường chiến lược:")
 cities_text = st.text_area(
-    "Đường dẫn sự kiện nâng cao:", 
+    "Đường dẫn sự kiện nâng cao (Mỗi dòng một URL):", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.city_slugs]),
     height=130
 )
@@ -299,18 +288,19 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # --- 🛡️ THUẬT TOÁN GÁC CỔNG LAI HYBRID V48.6 ---
+        # --- 🛡️ THUẬT TOÁN GÁC CỔNG TUYỆT ĐỐI V48.7 ---
         if previous_cents is not None:
             if 1.0 < price_cents < 99.0 and 1.0 < previous_cents < 99.0:
                 
-                # Kiểm tra xem kèo này có nằm trong danh mục ĐÃ BÁO TELEGRAM không
+                # Kiểm tra trạng thái xem kèo này đã từng phát tín hiệu Tele hay chưa
                 if history_key in st.session_state.reported_tele_keys:
                     
-                    # Lấy giá gốc lúc phát tin ra để làm điểm neo tính toán phần trăm
+                    # Lấy giá gốc cố định tại thời điểm Cá Voi vào lệnh làm mốc đối chiếu duy nhất
                     entry_price = st.session_state.entry_price_history.get(history_key, previous_cents)
+                    total_drop_cents = entry_price - price_cents
                     
                     last_sig_time = st.session_state.last_signal_time.get(history_key, 0)
-                    allow_send_signal = (current_now - last_sig_time) > 120 # Khóa chống trùng tin 2 phút
+                    allow_send_signal = (current_now - last_sig_time) > 120 # Khóa trùng tin 2 phút
                     
                     # 1. TÍN HIỆU CHỐT LỜI (Khi giá bứt phá vượt mốc tâm lý 50¢)
                     if previous_cents < 50.0 <= price_cents:
@@ -326,38 +316,44 @@ for target_slug in st.session_state.city_slugs:
                             send_telegram(st.session_state.channel_ngach, alert_tp)
                             st.session_state.last_signal_time[history_key] = current_now
 
-                    # 2. TÍN HIỆU CẮT LỖ KHẨN CẤP (Áp dụng bộ luật phân mảnh thông minh)
+                    # 2. TÍN HIỆU CẮT LỖ KHẨN CẤP PHÂN TẦNG + CHỐT CHẶN TỬ THẦN
                     is_trigger_sl = False
                     reason_sl = ""
                     
-                    # Phân khúc A: Giá lúc gom thuộc Cửa Trên (> 50¢) -> Giữ nguyên quy tắc sụt 10 giá
-                    if entry_price > 50.0:
-                        if previous_cents > price_cents and (previous_cents - price_cents) >= 10.0:
-                            is_trigger_sl = True
-                            reason_sl = f"Cửa trên gãy xu hướng (Sụt giảm -{previous_cents - price_cents:.1f} giá so với chu kỳ trước)"
+                    # --- CHỐT CHẶN TUYỆT ĐỐI KHÔNG BỊ TRƯỢT GIÁ (HARD STOP-LOSS) ---
+                    if price_cents <= 4.0:
+                        is_trigger_sl = True
+                        reason_sl = f"🚨 CHỐT CHẶN TỬ THẦN: Giá chạm vùng nguy hiểm sát đáy `{price_cents}¢` (Giá gốc: `{entry_price}¢`)"
                     
-                    # Phân khúc B: Giá lúc gom thuộc Cửa Dưới (< 30¢) -> Cho không gian thở, chỉ cắt khi giảm 45% giá trị gốc
-                    elif entry_price < 30.0:
-                        drop_percent = ((entry_price - price_cents) / entry_price) * 100
-                        if drop_percent >= 45.0:
-                            is_trigger_sl = True
-                            reason_sl = f"Cửa dưới vỡ trận phòng thủ (Đã sập -{drop_percent:.1f}% từ giá gốc {entry_price}¢ về {price_cents}¢)"
-                    
-                    # Phân khúc C: Vùng trung dung (Từ 30¢ đến 50¢) -> Cắt lỗ khi giảm 10 giá
                     else:
-                        if previous_cents > price_cents and (previous_cents - price_cents) >= 10.0:
-                            is_trigger_sl = True
-                            reason_sl = f"Vùng trung dung sụt sâu (Giảm -{previous_cents - price_cents:.1f} giá)"
+                        # Phân khúc A: Cửa Trên (Giá mua > 50¢) -> Cắt khi rớt quá 10 giá so với GIÁ GỐC MUA
+                        if entry_price > 50.0:
+                            if total_drop_cents >= 10.0:
+                                is_trigger_sl = True
+                                reason_sl = f"📉 Cửa trên sập gãy xu hướng: Giảm -{total_drop_cents:.1f} giá so với giá gốc `{entry_price}¢`"
+                        
+                        # Phân khúc B: Cửa Dưới (Giá mua < 30¢) -> Cho không gian thở, cắt khi giảm 45% giá trị gốc trở lên
+                        elif entry_price < 30.0:
+                            drop_percent = (total_drop_cents / entry_price) * 100
+                            if drop_percent >= 45.0:
+                                is_trigger_sl = True
+                                reason_sl = f"📉 Cửa dưới vỡ trận: Sập -{drop_percent:.1f}% từ giá gốc `{entry_price}¢`"
+                        
+                        # Phân khúc C: Vùng Trung Dung (30¢ đến 50¢) -> Cắt khi rớt quá 10 giá so với GIÁ GỐC MUA
+                        else:
+                            if total_drop_cents >= 10.0:
+                                is_trigger_sl = True
+                                reason_sl = f"📉 Vùng trung dung rủi ro: Giảm -{total_drop_cents:.1f} giá so với giá gốc `{entry_price}¢`"
 
-                    # Tiến hành bắn tin khẩn cấp nếu vi phạm luật an toàn danh mục
+                    # Kích hoạt lệnh bắn tin cảnh báo ép xả hàng thu hồi vốn tàn dư
                     if is_trigger_sl and allow_send_signal:
                         alert_sl = (
-                            f"⚠️ *[CẢNH BÁO: CẮT LỖ KHẨN CẤP V48.6]* ⚠️\n\n"
+                            f"🚨 *[BÁO ĐỘNG V48.7: ÉP LỆNH XẢ HÀNG CỨU VỐN]* 🚨\n\n"
                             f"🏆 *Thị trường:* {title}\n"
-                            f"📌 *Nhánh cược mục tiêu:* `{mốc_đấu}`\n"
-                            f"📉 *Trạng thái:* {reason_sl}\n"
-                            f"💵 *Mức giá hiện tại:* `{price_cents}¢` (Giá neo gốc: `{entry_price}¢`)\n"
-                            f"🚨 *Hành động:* Diễn biến thị trường đã vi phạm chốt chặn an toàn, hãy kiểm tra ngay vị thế!"
+                            f"📌 *Nhánh cược:* `{mốc_đấu}` ({hướng_cược})\n"
+                            f"⚠️ *Lý do:* {reason_sl}\n"
+                            f"💵 *Giá mua gốc:* `{entry_price}¢` ➡️ *Giá hiện tại:* `{price_cents}¢`\n"
+                            f"🔥 *HÀNH ĐỘNG:* Trận đấu diễn ra bế tắc hoặc bất lợi sâu, hãy xả ngay vị thế để thu hồi vốn!"
                         )
                         send_telegram(st.session_state.channel_vip, alert_sl)
                         send_telegram(st.session_state.channel_ngach, alert_sl)
@@ -365,7 +361,7 @@ for target_slug in st.session_state.city_slugs:
 
         st.session_state.cents_price_history[history_key] = price_cents
 
-        # --- 💰 QUÉT DÒNG TIỀN VÀ KHÓA MỐC GIÁ GỐC ĐỂ CẮT LỖ ---
+        # --- 💰 QUÉT DÒNG TIỀN VÀ PHÂN LOẠI CÁ VOI ---
         if previous_usd is None:
             flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
         else:
@@ -391,7 +387,7 @@ for target_slug in st.session_state.city_slugs:
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[CÁ VOI KHỦNG VIP] BÁO CÁO DÒNG TIỀN V48.6* 👑\n\n"
+                            f"👑 *[CÁ VOI KHỦNG VIP] BÁO CÁO DÒNG TIỀN V48.7* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
@@ -402,7 +398,7 @@ for target_slug in st.session_state.city_slugs:
                         send_telegram(st.session_state.channel_vip, urgent_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
                         
-                        # 🎯 Ghi nhận vào bộ nhớ gác cổng và KHÓA mốc giá gốc
+                        # 🎯 Ghi nhận vào danh sách mục tiêu và KHÓA mốc giá mua gốc làm nền
                         if history_key not in st.session_state.reported_tele_keys:
                             st.session_state.reported_tele_keys.append(history_key)
                             st.session_state.entry_price_history[history_key] = price_cents
@@ -412,7 +408,7 @@ for target_slug in st.session_state.city_slugs:
                     flow_type = "🐟 [NGÁCH] TÍN HIỆU GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[TÍN HIỆU GOM SỚM] BÁO CÁO DÒNG TIỀN V48.6* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM] BÁO CÁO DÒNG TIỀN V48.7* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
@@ -423,7 +419,7 @@ for target_slug in st.session_state.city_slugs:
                         send_telegram(st.session_state.channel_ngach, ngach_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
                         
-                        # 🎯 Ghi nhận vào bộ nhớ gác cổng và KHÓA mốc giá gốc
+                        # 🎯 Ghi nhận vào danh sách mục tiêu và KHÓA mốc giá mua gốc làm nền
                         if history_key not in st.session_state.reported_tele_keys:
                             st.session_state.reported_tele_keys.append(history_key)
                             st.session_state.entry_price_history[history_key] = price_cents
@@ -436,7 +432,7 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-# Hiển thị trạng thái bộ gác cổng lai thông minh
-st.info(f"⚙️ Bản V48.6 Hybrid: Đang bảo vệ {len(st.session_state.reported_tele_keys)} kèo chiến lược bằng cơ chế cắt lỗ phân tầng Độc quyền.")
+# Hiển thị thanh giám sát động của hệ thống bảo vệ tài khoản
+st.info(f"⚙️ Bản V48.7 Absolute: Đang bảo vệ {len(st.session_state.reported_tele_keys)} kèo chiến lược bằng cơ chế chặn đứng rủi ro chống lọt lưới.")
 time.sleep(refresh_rate)
 st.rerun()
