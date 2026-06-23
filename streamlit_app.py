@@ -132,6 +132,15 @@ https://polymarket.com/vi/sports/world-cup/fifwc-sco-bra-2026-06-24
 https://polymarket.com/vi/sports/world-cup/fifwc-mar-hai-2026-06-24
 https://polymarket.com/vi/sports/world-cup/fifwc-cze-mex-2026-06-24
 https://polymarket.com/vi/sports/world-cup/fifwc-rsa-kr-2026-06-24
+https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
+https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
+https://polymarket.com/event/solana-ath-in-june-2026
+https://polymarket.com/event/euro-2026-winner
+https://polymarket.com/event/copa-america-2026-winner
+https://polymarket.com/event/nba-championship-2026
+https://polymarket.com/event/presidential-election-2026
+https://polymarket.com/event/republican-nominee-2026
+https://polymarket.com/event/democratic-nominee-2026
 """
 
 def extract_slug(url_str):
