@@ -5,9 +5,8 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V48.1 Smart-Alert", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V48.2 Fix Spam", layout="wide")
 
-# --- 🎨 CSS INTERFACE V48.1 ---
 st.markdown(
     """
     <style>
@@ -41,7 +40,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("⚽ POLYMARKET RADAR V48.1 - BÁO CẮT LỖ KHI GIẢM 10 GIÁ")
+st.title("⚽ POLYMARKET RADAR V48.2 - SỬA LỖI SPAM TẤT TOÁN SÀN")
 
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
@@ -50,7 +49,6 @@ if "price_history" not in st.session_state:
 if "cents_price_history" not in st.session_state:
     st.session_state.cents_price_history = {}
 
-# --- DANH SÁCH SĂN THỊ TRƯỜNG CHUẨN ---
 RAW_URL_LIST = """
 https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026 
   https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
@@ -179,9 +177,8 @@ if "channel_vip" not in st.session_state:
 if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
-# --- 🛠️ SIDEBAR CONFIG ---
 with st.sidebar:
-    with st.form(key="config_form_v48_1"):
+    with st.form(key="config_form_v48_2"):
         st.header("🔌 Cấu hình Hệ thống Bot")
         tg_token_input = st.text_input("Bot Token chung:", value=st.session_state.tg_token, type="password")
         
@@ -195,7 +192,7 @@ with st.sidebar:
         threshold_input = st.slider("Ngưỡng phân tách Cá Mập ($):", 1000, 5000, value=st.session_state.whale_threshold, step=100)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="💾 CẬP NHẬT BẢN V48.1", use_container_width=True)
+        submit_button = st.form_submit_button(label="💾 CẬP NHẬT BẢN V48.2 FIX SPAM", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -203,7 +200,7 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("✅ Đã cập nhật mốc cắt lỗ giảm 10 giá thành công!")
+            st.toast("✅ Đã sửa lỗi quét giá ảo thành công!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
@@ -270,7 +267,6 @@ def send_telegram(chat_id, message):
                       timeout=5)
     except: pass
 
-# --- 🔄 VÒNG LẶP KIỂM TRA & GIÁM SÁT ---
 current_now = time.time()
 st.write("---")
 
@@ -296,35 +292,38 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # --- 📈 KIỂM TRA THAY ĐỔI GIÁ (CHỐT LỜI / CẮT LỖ 10 GIÁ) ---
+        # --- 📈 BỘ LỌC THÔNG MINH: CHỐT LỜI / CẮT LỖ (ĐÃ FIX SPAM TRẬN ĐẤU KẾT THÚC) ---
         if previous_cents is not None:
-            # 1. Tín hiệu CHỐT LỜI: Giá bò lên chạm/vượt mốc 50 cents
-            if previous_cents < 50.0 and price_cents >= 50.0:
-                alert_tp = (
-                    f"💰 *[CẢNH BÁO: CHỐT LỜI TRONG NGÀY]* 💰\n\n"
-                    f"🏆 *Thị trường:* {title}\n"
-                    f"📌 *Nhánh cược:* `{mốc_đấu}`\n"
-                    f"📈 *Biến động giá:* `{previous_cents}¢` ➡️ ĐẠT MỐC CHỐT LỜI: `{price_cents}¢`\n"
-                    f"🔔 *Hành động:* Cân nhắc bấm nút **SELL** để chốt lời đút túi!"
-                )
-                send_telegram(st.session_state.channel_vip, alert_tp)
-                send_telegram(st.session_state.channel_ngach, alert_tp)
+            # CHỈ XỬ LÝ NẾU GIÁ KHÔNG BỊ TRẢ VỀ CÁC MỐC TUYỆT ĐỐI KHÓA SÀN (0 HOẶC 100) VÀ GIÁ TRỊ CŨ KHÔNG PHẢI LÀ 0
+            if price_cents > 1.0 and price_cents < 99.0 and previous_cents > 1.0 and previous_cents < 99.0:
+                
+                # 1. Tín hiệu CHỐT LỜI: Giá bò từ dưới lên và chạm mốc 50 cents
+                if previous_cents < 50.0 and price_cents >= 50.0:
+                    alert_tp = (
+                        f"💰 *[CẢNH BÁO: CHỐT LỜI TRONG NGÀY]* 💰\n\n"
+                        f"🏆 *Thị trường:* {title}\n"
+                        f"📌 *Nhánh cược:* `{mốc_đấu}`\n"
+                        f"📈 *Biến động giá:* `{previous_cents}¢` ➡️ ĐẠT MỐC CHỐT LỜI: `{price_cents}¢`\n"
+                        f"🔔 *Hành động:* Cân nhắc bấm nút **SELL** để chốt lời đút túi!"
+                    )
+                    send_telegram(st.session_state.channel_vip, alert_tp)
+                    send_telegram(st.session_state.channel_ngach, alert_tp)
 
-            # 2. Tín hiệu CẮT LỖ CHUẨN: Giá sập mạnh từ 10 GIA trở lên (>= 10.0)
-            elif previous_cents > price_cents and (previous_cents - price_cents) >= 10.0:
-                alert_sl = (
-                    f"⚠️ *[CẢNH BÁO: CẮT LỖ KHẨN CẤP - GIẢM >10 GIÁ]* ⚠️\n\n"
-                    f"🏆 *Thị trường:* {title}\n"
-                    f"📌 *Nhánh cược:* `{mốc_đấu}`\n"
-                    f"📉 *Biến động giá:* Giá sụt sâu từ `{previous_cents}¢` ➡️ rơi xuống `{price_cents}¢` (*Giảm mạnh -{previous_cents - price_cents:.1f}¢*)\n"
-                    f"🚨 *Hành động:* Diễn biến đang bất lợi, mở app xem xét cắt lỗ ngay để bảo toàn vốn!"
-                )
-                send_telegram(st.session_state.channel_vip, alert_sl)
-                send_telegram(st.session_state.channel_ngach, alert_sl)
+                # 2. Tín hiệu CẮT LỖ: Giá thực tế sụt giảm từ 10 GIÁ trở lên
+                elif previous_cents > price_cents and (previous_cents - price_cents) >= 10.0:
+                    alert_sl = (
+                        f"⚠️ *[CẢNH BÁO: CẮT LỖ KHẨN CẤP]* ⚠️\n\n"
+                        f"🏆 *Thị trường:* {title}\n"
+                        f"📌 *Nhánh cược:* `{mốc_đấu}`\n"
+                        f"📉 *Biến động giá:* Giá sụt sâu từ `{previous_cents}¢` ➡️ rơi xuống `{price_cents}¢` (*Giảm -{previous_cents - price_cents:.1f}¢*)\n"
+                        f"🚨 *Hành động:* Diễn biến bất lợi, mở app xem xét cắt lỗ ngay!"
+                    )
+                    send_telegram(st.session_state.channel_vip, alert_sl)
+                    send_telegram(st.session_state.channel_ngach, alert_sl)
 
         st.session_state.cents_price_history[history_key] = price_cents
 
-        # --- 💰 BIỂU ĐỒ DÒNG TIỀN ---
+        # --- 💰 PHÂN LOẠI DÒNG TIỀN ---
         if previous_usd is None:
             flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
         else:
@@ -349,7 +348,7 @@ for target_slug in st.session_state.city_slugs:
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[CÁ VOI KHỦNG VIP] BÁO CÁO DÒNG TIỀN V48.1* 👑\n\n"
+                            f"👑 *[CÁ VOI KHỦNG VIP] BÁO CÁO DÒNG TIỀN V48.2* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
@@ -364,7 +363,7 @@ for target_slug in st.session_state.city_slugs:
                     flow_type = "🐟 [NGÁCH] TÍN HIỆU GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[TÍN HIỆU GOM SỚM] BÁO CÁO DÒNG TIỀN V48.1* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM] BÁO CÁO DÒNG TIỀN V48.2* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
@@ -383,6 +382,6 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Hệ thống V48.1 đang chạy: Báo cắt lỗ ngay khi giá rơi từ 10 cents trở lên.")
+st.info(f"⚙️ Bản V48.2 ổn định: Đã thêm bộ lọc loại bỏ nhảy giá ảo khi sàn tất toán (0¢ hoặc 100¢).")
 time.sleep(refresh_rate)
 st.rerun()
