@@ -123,6 +123,7 @@ https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/us-gdp-q1-2026-final-reading
 https://polymarket.com/event/solana-ath-in-june-2026
+https://polymarket.com/vi/esports/dota-2/the-international/dota2-rnx-grind-2026-06-23
 """
 
 def extract_slug(url_str):
