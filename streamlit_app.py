@@ -149,6 +149,10 @@ https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-above-210-on-june-26-2026
 https://polymarket.com/vi/sports/atp/atp-blancan-berkiet-2026-06-23
+https://polymarket.com/vi/sports/wta/wta-ruse-noskova-2026-06-22
+https://polymarket.com/vi/sports/wta/wta-akugue-pigato-2026-06-23
+https://polymarket.com/vi/sports/wta/wta-akugue-pigato-2026-06-23
+https://polymarket.com/vi/sports/wta/wta-marista-ortenzi-2026-06-23
 """
 
 def extract_slug(url_str):
