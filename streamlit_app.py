@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Anti-Bot Tracker V47", layout="wide")
+st.set_page_config(page_title="Polymarket Anti-Bot Tracker V47 Pro", layout="wide")
 
 # --- 🎨 CSS INTERFACE V47 ---
 st.markdown(
@@ -41,7 +41,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("⚽ POLYMARKET RADAR V47 - HIỂN THỊ CHI TIẾT NHÁNH CƯỢC")
+st.title("⚽ POLYMARKET RADAR V47 - BẢN SỬA LỖI BỘ LỌC DÒNG TIỀN")
 
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
@@ -119,7 +119,6 @@ https://polymarket.com/vi/sports/wnba/wnba-dal-sea-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-atl-sd-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-bos-col-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-bal-laa-2026-06-22
-
 """
 
 def extract_slug(url_str):
@@ -137,7 +136,7 @@ default_cities = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n"
 if "city_slugs" not in st.session_state:
     st.session_state.city_slugs = default_cities
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 1000  
+    st.session_state.whale_threshold = 2000  
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
@@ -166,7 +165,7 @@ with st.sidebar:
             st.session_state.refresh_rate = refresh_input
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_routing = {"default": id_def.strip()}
-            st.toast("✅ Đã kích hoạt hệ thống V47 hiển thị nhánh cược chi tiết!")
+            st.toast("✅ Đã kích hoạt hệ thống V47 và đồng bộ bộ lọc nghiêm ngặt!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
@@ -195,7 +194,7 @@ def get_polymarket_hot_zones(slug):
             
             raw_bins = []
             for m in markets_list:
-                # 🚀 CẢI TIẾN LÕI V47: Ưu tiên lấy title đầy đủ của market để tránh bị mất tên tay vợt
+                # 🚀 LẤY TIÊU ĐỀ CHI TIẾT NHÁNH CƯỢC
                 full_title = m.get("title", "")
                 group_title = m.get("groupItemTitle", "")
                 
@@ -240,7 +239,7 @@ def send_telegram_all(message):
                       timeout=5)
     except: pass
 
-# --- 🔄 VÒNG LẶP KIỂM TRA ĐỘC QUYỀN V47 ---
+# --- 🔄 VÒNG LẶP KIỂM TRA ĐỘC QUYỀN V47 PRO ---
 current_now = time.time()
 st.write("---")
 
@@ -265,28 +264,25 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # VÒNG 1: Kiểm tra rào chắn số tiền tối thiểu
-        if real_usd >= whale_threshold_usd:
-            if previous_usd is None:
-                flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
-            else:
-                delta_cash = abs(real_usd - previous_usd)
-                cent_part = round(real_usd - int(real_usd), 2)
-                
-                # 🛡️ CHIẾN THUẬT KIM CƯƠNG V47: CHẶN BIÊN ĐỘ GIÁ (EDGE LOCK)
-                is_price_too_high_or_low = price_cents > 90.0 or price_cents < 5.0
-                
-                # Kiểm tra độ biến động thực tế hợp lý của lệnh người thật
-                is_invalid_delta = delta_cash < 350.0 or delta_cash > 35000.0
-                
-                is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
-                
-                if is_bot_pattern:
-                    if is_price_too_high_or_low and delta_cash >= 350.0:
-                        flow_type = "🤖 BOT TẤT TOÁN SÀN (ĐÃ CHẶN)"
-                    else:
-                        flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
+        if previous_usd is None:
+            flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
+        else:
+            delta_cash = abs(real_usd - previous_usd)
+            cent_part = round(real_usd - int(real_usd), 2)
+            
+            # CHẶN BIÊN ĐỘ GIÁ (EDGE LOCK)
+            is_price_too_high_or_low = price_cents > 90.0 or price_cents < 5.0
+            is_invalid_delta = delta_cash < 350.0 or delta_cash > 35000.0
+            is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
+            
+            if is_bot_pattern:
+                if is_price_too_high_or_low and delta_cash >= 350.0:
+                    flow_type = "🤖 BOT TẤT TOÁN SÀN (ĐÃ CHẶN)"
                 else:
+                    flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
+            else:
+                # 🛡️ SỬA LỖI CORE KHÓA CHẶT: LƯỢNG TIỀN VÀO RÒNG PHẢI ĐẠT TRÊN NGƯỠNG ĐÃ CÀI ĐẶT
+                if delta_cash >= whale_threshold_usd:
                     flow_type = "🔥 NGƯỜI THẬT MUA YES"
                     st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN CHUYÊN GIA GOM HÀNG SỚM 👑 Vị thế: {mốc_đấu} | Tiền vào ròng: ${delta_cash:,.2f} | Giá: {price_cents}¢</div>', unsafe_allow_html=True)
                     
@@ -300,10 +296,12 @@ for target_slug in st.session_state.city_slugs:
                             f"💵 *Mức giá gom hợp lý:* `{price_cents}¢`\n"
                             f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
                             f"📊 *Tổng vốn vị thế:* `${real_usd:,.2f}`\n\n"
-                            f"🛡 *Radar V47: Sửa lỗi gộp chuỗi, hiển thị tường minh chi tiết tên tay vợt và mốc kèo chấp.*"
+                            f"🛡 *Radar V47 PRO: Đã vá lỗi đồng bộ volume, chặn tuyệt đối tin rác dưới ngưỡng.*"
                         )
                         send_telegram_all(urgent_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
+                else:
+                    flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f} < Ngưỡng {whale_threshold_usd}$)"
         
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
@@ -311,6 +309,6 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Hệ thống hiển thị chi tiết V47 đang hoạt động bảo mật.")
+st.info(f"⚙️ Radar V47 PRO đang chạy bảo mật. Ngưỡng chặn dòng tiền hiện tại: >= {whale_threshold_usd}$")
 time.sleep(refresh_rate)
 st.rerun()
