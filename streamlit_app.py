@@ -160,6 +160,7 @@ https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-above-210-on-june-26-2026
 https://polymarket.com/vi/event/what-price-will-ethereum-hit-on-june-23
 https://polymarket.com/vi/event/what-price-will-bitcoin-hit-on-june-23
+https://polymarket.com/vi/event/what-price-will-xrp-hit-on-june-23
 """
 
 def extract_slug(url_str):
