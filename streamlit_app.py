@@ -150,6 +150,9 @@ https://polymarket.com/event/solana-above-210-on-june-26-2026
 https://polymarket.com/vi/event/what-price-will-ethereum-hit-on-june-24
 https://polymarket.com/vi/event/what-price-will-bitcoin-hit-on-june-24
 https://polymarket.com/vi/event/what-price-will-xrp-hit-on-june-24
+https://polymarket.com/vi/sports/wta/wta-sonmez-dart-2026-06-23
+https://polymarket.com/vi/sports/wta/wta-krueger-knutson-2026-06-23
+https://polymarket.com/vi/sports/wta/wta-bejlek-siegemu-2026-06-22
 """
 
 def extract_slug(url_str):
