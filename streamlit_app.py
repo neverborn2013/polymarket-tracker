@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Anti-Bot Tracker V47 Pro", layout="wide")
+st.set_page_config(page_title="Polymarket Anti-Bot Tracker V47 Dual-Channel", layout="wide")
 
 # --- 🎨 CSS INTERFACE V47 ---
 st.markdown(
@@ -41,14 +41,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("⚽ POLYMARKET RADAR V47 - BẢN SỬA LỖI BỘ LỌC DÒNG TIỀN")
+st.title("⚽ POLYMARKET RADAR V47 - HỆ THỐNG ĐIỀU PHỐI HAI KÊNH SONG SONG")
 
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
 if "price_history" not in st.session_state:
     st.session_state.price_history = {}
 
-# --- DANH SÁCH LINK MẶC ĐỊNH SĂN SONG SONG THỂ THAO & THỜI TIẾT ---
+# --- DANH SÁCH SĂN ĐA DẠNG THỊ TRƯỜNG ---
 RAW_URL_LIST = """
 https://polymarket.com/event/highest-temperature-in-tokyo-on-june-23-2026 
   https://polymarket.com/event/highest-temperature-in-madrid-on-june-23-2026
@@ -119,6 +119,10 @@ https://polymarket.com/vi/sports/wnba/wnba-dal-sea-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-atl-sd-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-bos-col-2026-06-22
 https://polymarket.com/vi/sports/mlb/mlb-bal-laa-2026-06-22
+https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
+https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
+https://polymarket.com/event/us-gdp-q1-2026-final-reading
+https://polymarket.com/event/solana-ath-in-june-2026
 """
 
 def extract_slug(url_str):
@@ -142,36 +146,42 @@ if "refresh_rate" not in st.session_state:
 if "tg_token" not in st.session_state:
     st.session_state.tg_token = "8805371373:AAGkYYnNqHPPdFy3kRiOGyT2-ZDyaewaa3M"
 
-default_routing = {"default": "-1004312043313"}
-if "channel_routing" not in st.session_state:
-    st.session_state.channel_routing = default_routing
+if "channel_vip" not in st.session_state:
+    st.session_state.channel_vip = "-1004312043313"  # ID Kênh hiện tại của bạn
+if "channel_ngach" not in st.session_state:
+    st.session_state.channel_ngach = "-1004377611538"  # Nhập ID Kênh phụ mới tạo vào đây
 
-# --- 🛠️ SIDEBAR CONFIG V47 ---
+# --- 🛠️ SIDEBAR CONFIG V47 DUAL ---
 with st.sidebar:
     with st.form(key="config_form_v47"):
-        st.header("🔌 Cấu hình Telegram")
-        tg_token_input = st.text_input("Bot Token:", value=st.session_state.tg_token, type="password")
-        id_def = st.text_input("ID Kênh Nhận Tin Tổng:", value=st.session_state.channel_routing.get("default", ""))
+        st.header("🔌 Cấu hình Hệ thống Bot")
+        tg_token_input = st.text_input("Bot Token chung:", value=st.session_state.tg_token, type="password")
+        
+        st.write("---")
+        st.header("📢 Định tuyến 2 Kênh")
+        id_vip_input = st.text_input("ID Kênh VIP (Lệnh Lớn):", value=st.session_state.channel_vip)
+        id_ngach_input = st.text_input("ID Kênh Ngách (Gom Sớm):", value=st.session_state.channel_ngach, placeholder="-100xxxxxxxxx")
 
         st.write("---")
         st.header("🛡️ Bộ lọc tối cao V47")
-        threshold_input = st.slider("Ngưỡng tiền lọc Cá Mập ($):", 50, 5000, value=st.session_state.whale_threshold, step=50)
+        threshold_input = st.slider("Ngưỡng phân tách Cá Mập ($):", 1000, 5000, value=st.session_state.whale_threshold, step=100)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="💾 KÍCH HOẠT HỆ THỐNG V47", use_container_width=True)
+        submit_button = st.form_submit_button(label="💾 KÍCH HOẠT HỆ THỐNG DUAL-CHANNEL", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
             st.session_state.refresh_rate = refresh_input
             st.session_state.tg_token = tg_token_input
-            st.session_state.channel_routing = {"default": id_def.strip()}
-            st.toast("✅ Đã kích hoạt hệ thống V47 và đồng bộ bộ lọc nghiêm ngặt!")
+            st.session_state.channel_vip = id_vip_input.strip()
+            st.session_state.channel_ngach = id_ngach_input.strip()
+            st.toast("✅ Đã kích hoạt hệ thống song song và chia luồng tin nhắn!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
 refresh_rate = st.session_state.refresh_rate
 
-st.subheader(f"📋 Hệ thống đang giám sát {len(st.session_state.city_slugs)} thị trường:")
+st.subheader(f"📋 Radar đang giám sát song song {len(st.session_state.city_slugs)} thị trường:")
 cities_text = st.text_area(
     "Danh sách đường dẫn radar quét ngầm:", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.city_slugs]),
@@ -194,7 +204,6 @@ def get_polymarket_hot_zones(slug):
             
             raw_bins = []
             for m in markets_list:
-                # 🚀 LẤY TIÊU ĐỀ CHI TIẾT NHÁNH CƯỢC
                 full_title = m.get("title", "")
                 group_title = m.get("groupItemTitle", "")
                 
@@ -229,17 +238,15 @@ def get_polymarket_hot_zones(slug):
         return None
     except: return None
 
-def send_telegram_all(message):
-    if not TELEGRAM_TOKEN: return
-    target_chat_id = st.session_state.channel_routing.get("default", "").strip()
-    if not target_chat_id: return
+def send_telegram(chat_id, message):
+    if not TELEGRAM_TOKEN or not chat_id: return
     try: 
         requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", 
-                      json={"chat_id": target_chat_id, "text": message, "parse_mode": "Markdown"}, 
+                      json={"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}, 
                       timeout=5)
     except: pass
 
-# --- 🔄 VÒNG LẶP KIỂM TRA ĐỘC QUYỀN V47 PRO ---
+# --- 🔄 VÒNG LẶP KIỂM TRA ĐA KÊNH ---
 current_now = time.time()
 st.write("---")
 
@@ -270,7 +277,6 @@ for target_slug in st.session_state.city_slugs:
             delta_cash = abs(real_usd - previous_usd)
             cent_part = round(real_usd - int(real_usd), 2)
             
-            # CHẶN BIÊN ĐỘ GIÁ (EDGE LOCK)
             is_price_too_high_or_low = price_cents > 90.0 or price_cents < 5.0
             is_invalid_delta = delta_cash < 350.0 or delta_cash > 35000.0
             is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
@@ -281,27 +287,46 @@ for target_slug in st.session_state.city_slugs:
                 else:
                     flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
             else:
-                # 🛡️ SỬA LỖI CORE KHÓA CHẶT: LƯỢNG TIỀN VÀO RÒNG PHẢI ĐẠT TRÊN NGƯỠNG ĐÃ CÀI ĐẶT
+                last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
+                
+                # 🌟 LUỒNG 1: ĐIỀU PHỐI VÀO KÊNH VIP (NẾU VƯỢT NGƯỠNG CÁ MẬP VÍ DỤ: 2000$)
                 if delta_cash >= whale_threshold_usd:
-                    flow_type = "🔥 NGƯỜI THẬT MUA YES"
-                    st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN CHUYÊN GIA GOM HÀNG SỚM 👑 Vị thế: {mốc_đấu} | Tiền vào ròng: ${delta_cash:,.2f} | Giá: {price_cents}¢</div>', unsafe_allow_html=True)
+                    flow_type = "👑 [VIP] CÁ VOI KHỦNG"
+                    st.markdown(f'<div class="whale-real-alert">👑 CÁ VOI VIP GOM HÀNG KHỦNG 👑 Vị thế: {mốc_đấu} | Tiền ròng: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
                     
-                    last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👤 *BÁO CÁO DÒNG TIỀN TỰ NHIÊN (CHUYÊN GIA) V47* 👤\n\n"
+                            f"👑 *[CÁ VOI KHỦNG VIP] BÁO CÁO DÒNG TIỀN V47* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
                             f"💵 *Mức giá gom hợp lý:* `{price_cents}¢`\n"
                             f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
                             f"📊 *Tổng vốn vị thế:* `${real_usd:,.2f}`\n\n"
-                            f"🛡 *Radar V47 PRO: Đã vá lỗi đồng bộ volume, chặn tuyệt đối tin rác dưới ngưỡng.*"
+                            f"🔥 *Phân hạng:* Định tuyến thẳng vào Kênh VIP."
                         )
-                        send_telegram_all(urgent_msg)
+                        send_telegram(st.session_state.channel_vip, urgent_msg)
+                        st.session_state.last_whale_alert_v47[history_key] = current_now
+                        
+                # 🌟 LUỒNG 2: ĐIỀU PHỐI VÀO KÊNH NGÁCH (NẾU LÀ LỆNH TỪ 400$ ĐẾN DƯỚI NGƯỠNG VIP)
+                elif delta_cash >= 400.0:
+                    flow_type = "🐟 [NGÁCH] TÍN HIỆU GOM SỚM"
+                    
+                    if current_now - last_alert_time > 20 and st.session_state.channel_ngach:
+                        ngach_msg = (
+                            f"🐟 *[TÍN HIỆU GOM SỚM] BÁO CÁO DÒNG TIỀN V47* 🐟\n\n"
+                            f"🏆 *Thị trường:* {title}\n"
+                            f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
+                            f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
+                            f"💵 *Mức giá gom hợp lý:* `{price_cents}¢`\n"
+                            f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
+                            f"📊 *Tổng vốn vị thế:* `${real_usd:,.2f}`\n\n"
+                            f"⚡ *Phân hạng:* Lệnh nhỏ lẻ thông minh / Gom sớm vào Kênh Ngách."
+                        )
+                        send_telegram(st.session_state.channel_ngach, ngach_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
                 else:
-                    flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f} < Ngưỡng {whale_threshold_usd}$)"
+                    flow_type = f"⚪ Nhỏ lẻ quá bé (${delta_cash:.2f})"
         
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
@@ -309,6 +334,6 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Radar V47 PRO đang chạy bảo mật. Ngưỡng chặn dòng tiền hiện tại: >= {whale_threshold_usd}$")
+st.info(f"⚙️ Bộ điều phối song song đang hoạt động. VIP: >= {whale_threshold_usd}$ | Ngách: >= 400$")
 time.sleep(refresh_rate)
 st.rerun()
