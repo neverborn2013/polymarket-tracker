@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V48.8 Climate Pro", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V48.9 Multi-Asset", layout="wide")
 
 # --- 🎨 CSS INTERFACE ---
 st.markdown(
@@ -36,14 +36,14 @@ st.markdown(
         margin-bottom: 8px;
         font-weight: bold;
         font-size: 14px;
-        border-left: 5px solid #00a8ff;
+        border-left: 5px solid #e74c3c;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("🌡️ POLYMARKET RADAR V48.8 - TỐI ƯU MẠNG NHIỆT ĐỘ & THỜI TIẾT")
+st.title("🚀 POLYMARKET RADAR V48.9 - PHÂN LUỒNG NGƯỠNG ĐA NỀN TẢNG")
 
 # Khởi tạo bộ nhớ đệm trạng thái hệ thống
 if "last_whale_alert_v47" not in st.session_state:
@@ -162,7 +162,7 @@ default_cities = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n"
 if "city_slugs" not in st.session_state:
     st.session_state.city_slugs = default_cities
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 1000  # Hạ xuống 1000$ mặc định cho mảng nhiệt độ dễ nổ
+    st.session_state.whale_threshold = 1000  
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
@@ -174,8 +174,8 @@ if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
 with st.sidebar:
-    with st.form(key="config_form_v48_8"):
-        st.header("🔌 Cấu hình Hệ thống V48.8")
+    with st.form(key="config_form_v48_9"):
+        st.header("🔌 Cấu hình Hệ thống V48.9")
         tg_token_input = st.text_input("Bot Token chung:", value=st.session_state.tg_token, type="password")
         
         st.write("---")
@@ -185,10 +185,10 @@ with st.sidebar:
 
         st.write("---")
         st.header("🛡️ Bộ lọc rủi ro")
-        threshold_input = st.slider("Ngưỡng Cá Mập ($):", 300, 5000, value=st.session_state.whale_threshold, step=100)
+        threshold_input = st.slider("Ngưỡng Cá Mập ($):", 200, 5000, value=st.session_state.whale_threshold, step=100)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="🚀 ĐỒNG BỘ MẢNG THỜI TIẾT", use_container_width=True)
+        submit_button = st.form_submit_button(label="🚀 ĐỒNG BỘ ĐA NỀN TẢNG", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -196,15 +196,15 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("✅ Đã tối ưu hóa bộ lọc mở rộng cho mảng Khí hậu!")
+            st.toast("✅ Đã kích hoạt cơ chế nhận diện mảng thông minh!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
 refresh_rate = st.session_state.refresh_rate
 
-st.subheader(f"📋 Radar đang bảo vệ {len(st.session_state.city_slugs)} thị trường:")
+st.subheader(f"📋 Radar đang giám sát {len(st.session_state.city_slugs)} sự kiện:")
 cities_text = st.text_area(
-    "Đường dẫn sự kiện nâng cao:", 
+    "Đường dẫn sự kiện (Multi-Asset URLs):", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.city_slugs]),
     height=130
 )
@@ -244,12 +244,11 @@ def get_polymarket_hot_zones(slug):
                 })
             
             df_raw = pd.DataFrame(raw_bins)
-            hot_zones = df_raw.sort_values(by="Volume", ascending=False).head(4)
+            hot_zones = df_raw.sort_values(by="Volume", ascending=False).head(5)
 
             final_data = []
             for _, row in hot_zones.iterrows():
                 real_usd_yes = round((row['Volume'] * row['YES_Price']) / 100, 2)
-                # SỬA LỖI HIỂN THỊ: Ép kiểu float làm tròn 2 chữ số thập phân cho Cents công khai
                 final_data.append({
                     "Bin": row['Base_Name'], 
                     "Side": "YES", 
@@ -280,7 +279,15 @@ for target_slug in st.session_state.city_slugs:
     df = data["df"]
     analysis_labels = []
     
-    st.markdown(f'<div class="city-header">🌡️ GÁC CỔNG HỆ THỐNG: {title.upper()}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="city-header">📡 PHÂN LUỒNG RADAR: {title.upper()}</div>', unsafe_allow_html=True)
+    
+    # 🔥 KIỂM TRA PHÂN LOẠI MẢNG DỰA TRÊN TÊN TIÊU ĐỀ SỰ KIỆN
+    title_lower = title.lower()
+    is_sensitive_asset = (
+        "°c" in title_lower or "temperature" in title_lower or 
+        "elon" in title_lower or "tweet" in title_lower or
+        "bitcoin" in title_lower or "crypto" in title_lower or "eth" in title_lower
+    )
     
     for _, row in df.iterrows():
         mốc_đấu = row["Bin"]
@@ -294,7 +301,7 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # --- 🛡️ THUẬT TOÁN GÁC CỔNG TUYỆT ĐỐI V48.8 ---
+        # --- LOGIC CẮT LỖ KHẨN CẤP V48.9 ---
         if previous_cents is not None:
             if history_key in st.session_state.reported_tele_keys:
                 entry_price = st.session_state.entry_price_history.get(history_key, previous_cents)
@@ -303,55 +310,34 @@ for target_slug in st.session_state.city_slugs:
                 last_sig_time = st.session_state.last_signal_time.get(history_key, 0)
                 allow_send_signal = (current_now - last_sig_time) > 120 
                 
-                # 1. TÍN HIỆU CHỐT LỜI (Khi giá bứt phá vượt mốc tâm lý 50¢)
-                if previous_cents < 50.0 <= price_cents:
-                    if allow_send_signal:
-                        alert_tp = (
-                            f"💰 *[CẢNH BÁO: CHỐT LỜI TRONG NGÀY]* 💰\n\n"
-                            f"🏆 *Thị trường:* {title}\n"
-                            f"📌 *Nhánh cược mục tiêu:* `{mốc_đấu}`\n"
-                            f"📈 *Biến động:* Giá từ `{previous_cents:.1f}¢` ➡️ bứt phá vượt mốc `{price_cents:.1f}¢`\n"
-                            f"🔔 *Hành động:* Vị thế theo dòng tiền đã đạt lợi nhuận tốt, cân nhắc bấm SELL!"
-                        )
-                        send_telegram(st.session_state.channel_vip, alert_tp)
-                        send_telegram(st.session_state.channel_ngach, alert_tp)
-                        st.session_state.last_signal_time[history_key] = current_now
-
-                # 2. TÍN HIỆU CẮT LỖ KHẨN CẤP PHÂN TẦNG + CHỐT CHẶN TỬ THẦN
                 is_trigger_sl = False
                 reason_sl = ""
                 
-                if price_cents <= 4.0 and "°C" not in str(mốc_đấu): # Kèo thể thao chạm đáy
-                    is_trigger_sl = True
-                    reason_sl = f"🚨 CHỐT CHẶN TỬ THẦN: Giá chạm vùng nguy hiểm sát đáy `{price_cents:.1f}¢`"
-                
-                elif price_cents <= 0.4 and "°C" in str(mốc_đấu): # Kèo thời tiết chạm đáy siêu sâu
-                    is_trigger_sl = True
-                    reason_sl = f"🚨 CHỐT CHẶN KHÍ HẬU: Giá dải nhiệt độ lịm dần về sát mốc biến mất `{price_cents:.2f}¢`"
-                
+                # Chốt chặn tử thần linh hoạt theo mảng
+                if is_sensitive_asset:
+                    if price_cents <= 0.2:
+                        is_trigger_sl = True
+                        reason_sl = f"🚨 CHỐT CHẶN KHẨN CẤP: Nhánh đặc thù tiệm cận mức biến mất `{price_cents:.2f}¢`"
                 else:
-                    if entry_price > 50.0:
-                        if total_drop_cents >= 10.0:
-                            is_trigger_sl = True
-                            reason_sl = f"📉 Cửa trên sập gãy xu hướng: Giảm -{total_drop_cents:.1f} giá so với giá gốc `{entry_price:.1f}¢`"
-                    elif entry_price < 30.0:
-                        drop_percent = (total_drop_cents / entry_price) * 100
-                        if drop_percent >= 45.0:
-                            is_trigger_sl = True
-                            reason_sl = f"📉 Cửa dưới vỡ trận: Sập -{drop_percent:.1f}% từ giá gốc `{entry_price:.1f}¢`"
-                    else:
-                        if total_drop_cents >= 10.0:
-                            is_trigger_sl = True
-                            reason_sl = f"📉 Vùng trung dung rủi ro: Giảm -{total_drop_cents:.1f} giá so với giá gốc `{entry_price:.1f}¢`"
+                    if price_cents <= 4.0:
+                        is_trigger_sl = True
+                        reason_sl = f"🚨 CHỐT CHẶN TỬ THẦN: Cửa thể thao sập chạm đáy nguy hiểm `{price_cents:.1f}¢`"
+                
+                if not is_trigger_sl and entry_price > 1.0:
+                    if entry_price > 50.0 and total_drop_cents >= 10.0:
+                        is_trigger_sl = True
+                        reason_sl = f"📉 Cửa trên gãy xu hướng: Giảm -{total_drop_cents:.1f} giá từ gốc `{entry_price:.1f}¢`"
+                    elif entry_price < 30.0 and (total_drop_cents / entry_price) >= 0.45:
+                        is_trigger_sl = True
+                        reason_sl = f"📉 Cửa dưới vỡ trận: Giảm sâu quá mức chịu đựng từ gốc `{entry_price:.1f}¢`"
 
                 if is_trigger_sl and allow_send_signal:
                     alert_sl = (
-                        f"🚨 *[BÁO ĐỘNG V48.8: ÉP LỆNH XẢ HÀNG CỨU VỐN]* 🚨\n\n"
+                        f"🚨 *[BÁO ĐỘNG PHÂN LUỒNG: ÉP LỆNH XẢ HÀNG]* 🚨\n\n"
                         f"🏆 *Thị trường:* {title}\n"
-                        f"📌 *Nhánh cược:* `{mốc_đấu}` ({hướng_cược})\n"
+                        f"📌 *Nhánh:* `{mốc_đấu}`\n"
                         f"⚠️ *Lý do:* {reason_sl}\n"
-                        f"💵 *Giá mua gốc:* `{entry_price:.2f}¢` ➡️ *Giá hiện tại:* `{price_cents:.2f}¢`\n"
-                        f"🔥 *HÀNH ĐỘNG:* Diễn biến thị trường bất lợi sâu, hãy xả ngay vị thế để thu hồi vốn!"
+                        f"💵 *Gốc:* `{entry_price:.2f}¢` ➡️ *Hiện tại:* `{price_cents:.2f}¢`"
                     )
                     send_telegram(st.session_state.channel_vip, alert_sl)
                     send_telegram(st.session_state.channel_ngach, alert_sl)
@@ -359,49 +345,41 @@ for target_slug in st.session_state.city_slugs:
 
         st.session_state.cents_price_history[history_key] = price_cents
 
-        # --- 💰 QUÉT DÒNG TIỀN VÀ MỞ KHÓA MẢNG THỜI TIẾT ---
+        # --- ĐIỀU PHỐI NGƯỠNG BỘ LỌC CHẶN BOT CHUYÊN BIỆT ---
         if previous_usd is None:
-            flow_type = "🔄 KHỞI TẠO NỀN (BỎ QUA)"
+            flow_type = "🔄 KHỞI TẠO NỀN"
         else:
             delta_cash = abs(real_usd - previous_usd)
             cent_part = round(real_usd - int(real_usd), 2)
             
-            # 🔥 ĐỘC QUYỀN V48.8: Kiểm tra xem đây có phải kèo thời tiết (chứa kí tự °C) không
-            is_climate_market = "°C" in str(mốc_đấu) or "temperature" in title.lower()
-            
-            # Nếu là kèo thời tiết, nới lỏng biên độ chặn bot xuống 0.1¢ thay vì 4.0¢
-            if is_climate_market:
-                is_price_too_high_or_low = price_cents > 98.0 or price_cents < 0.1
+            # 🔥 ÁP DỤNG NGƯỠNG SÀN LINH HOẠT THEO MẢNG
+            if is_sensitive_asset:
+                is_price_too_high_or_low = price_cents > 98.5 or price_cents < 0.1
+                is_invalid_delta = delta_cash < 150.0 or delta_cash > 50000.0
+                is_bot_pattern = is_invalid_delta or is_price_too_high_or_low
             else:
                 is_price_too_high_or_low = price_cents > 93.0 or price_cents < 4.0
-                
-            is_invalid_delta = delta_cash < 200.0 or delta_cash > 40000.0
-            is_bot_pattern = (cent_part not in [0.0, 0.5] and not is_climate_market) or is_invalid_delta or is_price_too_high_or_low
+                is_invalid_delta = delta_cash < 350.0 or delta_cash > 35000.0
+                is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
             
             if is_bot_pattern:
-                if is_price_too_high_or_low and delta_cash >= 200.0:
-                    flow_type = "🤖 BOT TẤT TOÁN SÀN (ĐÃ CHẶN)"
-                else:
-                    flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
+                flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
             else:
                 last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
+                # Mảng đặc thù hạ 50% ngưỡng tiền để dễ bắt dấu vết gom của tay to
+                current_threshold = whale_threshold_usd if not is_sensitive_asset else (whale_threshold_usd * 0.5)
                 
-                # Điều chỉnh giảm điều kiện tiền ròng cho mảng thời tiết dễ thở hơn
-                target_threshold = whale_threshold_usd if not is_climate_market else (whale_threshold_usd / 2)
-                
-                if delta_cash >= target_threshold:
+                if delta_cash >= current_threshold:
                     flow_type = "👑 [VIP] CÁ VOI KHỦNG"
-                    st.markdown(f'<div class="whale-real-alert">👑 CÁ VOI VIP GOM THỜI TIẾT 👑 Vị thế: {mốc_đấu} | Tiền ròng: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="whale-real-alert">👑 CÁ VOI PHÁT HIỆN 👑 Vị thế: {mốc_đấu} | Biến động: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[CÁ VOI KHỦNG THỜI TIẾT] BÁO CÁO DÒNG TIỀN V48.8* 👑\n\n"
+                            f"👑 *[PHÁT HIỆN CÁ VOI] HỆ THỐNG V48.9* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
-                            f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
-                            f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
-                            f"💵 *Mức giá gom hợp lý:* `{price_cents:.2f}¢`\n"
-                            f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
-                            f"📊 *Tổng vốn vị thế:* `${real_usd:,.2f}`"
+                            f"📌 *Vị thế:* `{mốc_đấu}`\n"
+                            f"💵 *Mức giá:* `{price_cents:.2f}¢`\n"
+                            f"💰 *Tiền vào ròng:* *${delta_cash:,.2f}*"
                         )
                         send_telegram(st.session_state.channel_vip, urgent_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
@@ -410,17 +388,14 @@ for target_slug in st.session_state.city_slugs:
                             st.session_state.reported_tele_keys.append(history_key)
                             st.session_state.entry_price_history[history_key] = price_cents
                         
-                elif delta_cash >= 200.0:
-                    flow_type = "🐟 [NGÁCH] TÍN HIỆU GOM SỚM"
+                elif delta_cash >= 150.0:
+                    flow_type = "🐟 [NGÁCH] GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[THỜI TIẾT GOM SỚM] BÁO CÁO DÒNG TIỀN V48.8* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM] HỆ THỐNG V48.9* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
-                            f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
-                            f"🎯 *Hành động:* *🟢 MUA ĐỒNG Ý (YES)*\n"
-                            f"💵 *Mức giá gom hợp lý:* `{price_cents:.2f}¢`\n"
-                            f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
-                            f"📊 *Tổng vốn vị thế:* `${real_usd:,.2f}`"
+                            f"📌 *Nhánh:* `{mốc_đấu}`\n"
+                            f"💰 *Tiền ròng:* *${delta_cash:,.2f}*"
                         )
                         send_telegram(st.session_state.channel_ngach, ngach_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
@@ -429,7 +404,7 @@ for target_slug in st.session_state.city_slugs:
                             st.session_state.reported_tele_keys.append(history_key)
                             st.session_state.entry_price_history[history_key] = price_cents
                 else:
-                    flow_type = f"⚪ Nhỏ lẻ quá bé (${delta_cash:.2f})"
+                    flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f})"
         
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
@@ -437,6 +412,5 @@ for target_slug in st.session_state.city_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-st.info(f"⚙️ Bản V48.8: Đang bảo vệ {len(st.session_state.reported_tele_keys)} nhánh cược. Chế độ quét Khí tượng/Nhiệt độ mở rộng đang bật.")
 time.sleep(refresh_rate)
 st.rerun()
