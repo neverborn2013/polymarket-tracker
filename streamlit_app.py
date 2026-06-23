@@ -124,6 +124,14 @@ https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/us-gdp-q1-2026-final-reading
 https://polymarket.com/event/solana-ath-in-june-2026
 https://polymarket.com/vi/esports/dota-2/the-international/dota2-rnx-grind-2026-06-23
+https://polymarket.com/vi/event/what-price-will-bitcoin-hit-june-22-28-2026
+https://polymarket.com/vi/event/what-price-will-ethereum-hit-june-22-28-2026
+https://polymarket.com/vi/sports/world-cup/fifwc-che-can-2026-06-24
+https://polymarket.com/vi/sports/world-cup/fifwc-bih-qat-2026-06-24
+https://polymarket.com/vi/sports/world-cup/fifwc-sco-bra-2026-06-24
+https://polymarket.com/vi/sports/world-cup/fifwc-mar-hai-2026-06-24
+https://polymarket.com/vi/sports/world-cup/fifwc-cze-mex-2026-06-24
+https://polymarket.com/vi/sports/world-cup/fifwc-rsa-kr-2026-06-24
 """
 
 def extract_slug(url_str):
