@@ -141,6 +141,13 @@ https://polymarket.com/event/nba-championship-2026
 https://polymarket.com/event/presidential-election-2026
 https://polymarket.com/event/republican-nominee-2026
 https://polymarket.com/event/democratic-nominee-2026
+https://polymarket.com/event/us-initial-jobless-claims-june-25-2026
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-24-2026
+https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
+https://polymarket.com/event/highest-temperature-in-new-york-on-june-24-2026
+https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
+https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
+https://polymarket.com/event/solana-above-210-on-june-26-2026
 """
 
 def extract_slug(url_str):
