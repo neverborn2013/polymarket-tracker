@@ -91,6 +91,8 @@ https://polymarket.com/event/highest-temperature-in-new-york-on-june-25-2026
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-ath-in-june-2026
+https://polymarket.com/vi/event/what-price-will-bitcoin-hit-june-22-28-2026
+https://polymarket.com/vi/event/what-price-will-bitcoin-hit-in-june-2026
 """
 def extract_slug(url_str):
     try:
