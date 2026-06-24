@@ -6,9 +6,9 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V49.7 Unified", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V49.8 Top Bins", layout="wide")
 
-# --- 🎨 CHUẨN HÓA GIAO DIỆN CSS TRỰC QUAN ---
+# --- 🎨 CHUẨN HÓA GIAO DIỆN CSS ---
 st.markdown(
     """
     <style>
@@ -37,14 +37,14 @@ st.markdown(
         margin-bottom: 8px;
         font-weight: bold;
         font-size: 14px;
-        border-left: 5px solid #e74c3c;
+        border-left: 5px solid #3498db;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("📊 POLYMARKET RADAR V49.7 - ENGINE PHÂN TÁCH ĐA SỰ KIỆN NÂNG CAO")
+st.title("📊 POLYMARKET RADAR V49.8 - THUẬT TOÁN ĐỊNH VỊ TOP 6 BINS VỐN CAO NHẤT")
 
 # Khởi tạo bộ nhớ đệm trạng thái hệ thống phòng tránh mất dữ liệu khi Rerun
 if "last_whale_alert_v47" not in st.session_state:
@@ -60,7 +60,7 @@ if "last_signal_time" not in st.session_state:
 if "reported_tele_keys" not in st.session_state:
     st.session_state.reported_tele_keys = []
 
-# Danh sách URL mặc định kết hợp cả 2 mảng Thời tiết & Thể thao để test hệ thống
+# Danh sách URL mặc định để hệ thống theo dõi
 RAW_URL_LIST = """
 https://polymarket.com/event/highest-temperature-in-tokyo-on-june-24-2026 
   https://polymarket.com/event/highest-temperature-in-singapore-on-june-24-2026  
@@ -91,6 +91,7 @@ https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-ath-in-june-2026
 """
+
 def extract_slug(url_str):
     try:
         cleaned_url = url_str.strip().rstrip('/')
@@ -118,8 +119,8 @@ if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
 with st.sidebar:
-    with st.form(key="config_form_v49_7"):
-        st.header("⚙️ Cấu hình Runtime V49.7")
+    with st.form(key="config_form_v49_8"):
+        st.header("⚙️ Cấu hình Runtime V49.8")
         tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
         
         st.write("---")
@@ -132,7 +133,7 @@ with st.sidebar:
         threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 100, 5000, value=st.session_state.whale_threshold, step=50)
         refresh_input = st.slider("Tần suất quét làm mới (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="⚡ KÍCH HOẠT HỆ THỐNG V49.7", use_container_width=True)
+        submit_button = st.form_submit_button(label="⚡ ĐỒNG BỘ ENGINE TOP 6 BINS", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -140,15 +141,15 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("🚀 Đã tối ưu hóa cấu trúc nhãn phân tách thành công!")
+            st.toast("🚀 Hệ thống đã chuyển sang chế độ quét Top 6 Bins Vốn Cao Nhất!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
 refresh_rate = st.session_state.refresh_rate
 
-st.subheader(f"📋 Danh sách thị trường đang quét tự động ({len(st.session_state.target_slugs)}):")
+st.subheader(f"📋 Danh sách thành phố đang giám sát ({len(st.session_state.target_slugs)}):")
 slugs_text = st.text_area(
-    "Thêm/Sửa đổi danh sách URLs Polymarket tại đây:", 
+    "Nhập danh sách URLs Polymarket tại đây:", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.target_slugs]),
     height=130
 )
@@ -157,15 +158,7 @@ current_input_slugs = [extract_slug(line) for line in slugs_text.split("\n") if 
 if current_input_slugs and current_input_slugs != st.session_state.target_slugs:
     st.session_state.target_slugs = current_input_slugs
 
-def parse_temperature(bin_str):
-    """Trích xuất mốc số để sắp xếp tuyến tính cho mảng thời tiết"""
-    try:
-        nums = re.findall(r'\d+', bin_str)
-        if nums: return int(nums[0])
-    except: pass
-    return 999
-
-def get_polymarket_unified_data(slug):
+def get_polymarket_top6_data(slug):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
         url = f"https://gamma-api.polymarket.com/events?slug={slug}"
@@ -175,7 +168,6 @@ def get_polymarket_unified_data(slug):
             market_title = event_data.get("title", "Sự Kiện Polymarket")
             markets_list = event_data.get("markets", [])
             
-            # --- ENGINE TỰ ĐỘNG PHÂN TÁCH NHÃN THỊ TRƯỜNG ---
             title_lower = market_title.lower()
             is_weather = "°c" in title_lower or "temperature" in title_lower or "°f" in title_lower
             is_sports = " vs " in title_lower or " vs. " in title_lower or "match" in title_lower
@@ -193,34 +185,32 @@ def get_polymarket_unified_data(slug):
 
                 liquidity = float(m.get("liquidity", 0))
                 est_volume = round(liquidity / 4, 2)
+                
+                # Tính toán tổng vốn vị thế dự kiến
+                real_usd_yes = round((est_volume * price_yes) / 100, 2)
 
                 raw_bins.append({
                     "Bin_Name": base_name,
                     "YES_Price": price_yes,
                     "Volume": est_volume,
-                    "Sort_Key": parse_temperature(base_name) if is_weather else 0
+                    "Total_Asset_Value": real_usd_yes
                 })
             
             df_raw = pd.DataFrame(raw_bins)
             if df_raw.empty: return None
 
-            # Sắp xếp theo tính chất đặc thù của mảng
-            if is_weather:
-                df_raw = df_raw.sort_values(by="Sort_Key", ascending=True)
-            else:
-                df_raw = df_raw.sort_values(by="Volume", ascending=False).head(5)
+            # --- THUẬT TOÁN ĐỊNH VỊ: LỌC CHÍNH XÁC 6 BINS CÓ TỔNG VỐN VỊ THẾ CAO NHẤT ---
+            df_raw = df_raw.sort_values(by="Total_Asset_Value", ascending=False).head(6)
 
             final_data = []
             for _, row in df_raw.iterrows():
-                real_usd_yes = round((row['Volume'] * row['YES_Price']) / 100, 2)
                 final_data.append({
                     "Nhánh Cược (Bin)": row['Bin_Name'], 
                     "Side": "YES", 
                     "Giá (Cents)": float(f"{row['YES_Price']:.2f}"), 
-                    "Tổng vốn vị thế ($)": real_usd_yes
+                    "Tổng vốn vị thế ($)": row['Total_Asset_Value']
                 })
                 
-            # Trả về nhãn mảng chuẩn xác để điều hướng tiêu đề Telegram
             asset_type = "THỜI TIẾT" if is_weather else ("THỂ THAO" if is_sports else "TIN TỨC CỘNG ĐỒNG")
             return {"title": market_title, "df": pd.DataFrame(final_data), "asset_type": asset_type, "is_weather": is_weather}
         return None
@@ -238,7 +228,7 @@ current_now = time.time()
 st.write("---")
 
 for target_slug in st.session_state.target_slugs:
-    data = get_polymarket_unified_data(target_slug)
+    data = get_polymarket_top6_data(target_slug)
     if data is None: continue
         
     title = data["title"]
@@ -247,7 +237,7 @@ for target_slug in st.session_state.target_slugs:
     is_weather_mode = data["is_weather"]
     analysis_labels = []
     
-    st.markdown(f'<div class="market-header">📡 RADAR [{asset_label}]: {title.upper()}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="market-header">📡 RADAR GÁC CỔNG [{asset_label} - TOP 6 BINS]: {title.upper()}</div>', unsafe_allow_html=True)
     
     for _, row in df.iterrows():
         mốc_đấu = row["Nhánh Cược (Bin)"]
@@ -261,7 +251,7 @@ for target_slug in st.session_state.target_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # --- CHỐT CHẶN PHÂN TẦNG QUẢN TRỊ RỦI RO CHUẨN ---
+        # --- CHỐT CHẶN PHÂN TẦNG QUẢN TRỊ RỦI RO ---
         if previous_cents is not None:
             if history_key in st.session_state.reported_tele_keys:
                 entry_price = st.session_state.entry_price_history.get(history_key, previous_cents)
@@ -295,7 +285,7 @@ for target_slug in st.session_state.target_slugs:
 
                 if is_trigger_sl and allow_send_signal:
                     alert_sl = (
-                        f"🚨 *[BÁO ĐỘNG PHÂN LUỒNG: ÉP LỆNH XẢ HÀNG V49.7]* 🚨\n\n"
+                        f"🚨 *[BÁO ĐỘNG PHÂN LUỒNG: ÉP LỆNH XẢ HÀNG V49.8]* 🚨\n\n"
                         f"🏆 *Thị trường ({asset_label}):* {title}\n"
                         f"📌 *Nhánh:* `{mốc_đấu}`\n"
                         f"⚠️ *Lý do rủi ro:* {reason_sl}\n"
@@ -307,14 +297,13 @@ for target_slug in st.session_state.target_slugs:
 
         st.session_state.cents_price_history[history_key] = price_cents
 
-        # --- ENGINE BỘ LỌC HÀNH VI DÒNG TIỀN V49.7 ---
+        # --- ENGINE BỘ LỌC HÀNH VI DÒNG TIỀN V49.8 ---
         if previous_usd is None:
             flow_type = "🔄 KHỞI TẠO NỀN"
         else:
             delta_cash = abs(real_usd - previous_usd)
             cent_part = round(real_usd - int(real_usd), 2)
             
-            # Phân tách điều kiện Bot dựa theo tính thanh khoản của từng mảng
             if is_weather_mode:
                 is_price_too_high_or_low = price_cents > 99.0 or price_cents < 0.1
                 is_invalid_delta = delta_cash < 50.0 or delta_cash > 100000.0
@@ -328,7 +317,6 @@ for target_slug in st.session_state.target_slugs:
                 flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
             else:
                 last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
-                # Kèo thời tiết dùng ngưỡng nhạy cảm thấp hơn kèo thể thao (nhân hệ số 0.4)
                 current_threshold = whale_threshold_usd if not is_weather_mode else (whale_threshold_usd * 0.4)
 
                 if delta_cash >= current_threshold:
@@ -337,7 +325,7 @@ for target_slug in st.session_state.target_slugs:
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[PHÁT HIỆN CÁ VOI {asset_label}] V49.7* 👑\n\n"
+                            f"👑 *[PHÁT HIỆN CÁ VOI {asset_label}] V49.8* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"💵 *Mức giá gom hợp lý:* `{price_cents:.2f}¢`\n"
@@ -355,7 +343,7 @@ for target_slug in st.session_state.target_slugs:
                     flow_type = "🐟 [NGÁCH] GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[TÍN HIỆU GOM SỚM {asset_label}] V49.7* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM {asset_label}] V49.8* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Nhánh:* `{mốc_đấu}`\n"
                             f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
@@ -376,6 +364,5 @@ for target_slug in st.session_state.target_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-# Cơ chế vòng lặp không đồng bộ chống thắt nút cổ chai (Bottleneck)
 time.sleep(refresh_rate)
 st.rerun()
