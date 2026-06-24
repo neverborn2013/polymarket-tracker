@@ -66,6 +66,8 @@ RAW_URL_LIST = """
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-24-2026
   https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
    https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-24-2026
+     https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
+     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-24-2026   
     https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-24-2026  
 https://polymarket.com/vi/event/what-price-will-ethereum-hit-june-22-28-2026
 https://polymarket.com/vi/sports/world-cup/fifwc-che-can-2026-06-24
