@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V51.2 Full Suite", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V51.3 Full Suite", layout="wide")
 
 # --- 🎨 CHUẨN HÓA GIAO DIỆN HỆ THỐNG ---
 st.markdown(
@@ -44,7 +44,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🚀 POLYMARKET RADAR V51.2 - ENGINE GIÁM SÁT TOÀN DIỆN")
+st.title("🚀 POLYMARKET RADAR V51.3 - ENGINE GIÁM SÁT TOÀN DIỆN")
 
 # --- 💾 KHỞI TẠO BỘ NHỚ ĐỆM TRẠNG THÁI CACHING ---
 if "price_history" not in st.session_state:
@@ -60,9 +60,15 @@ if "reported_tele_keys" not in st.session_state:
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
 
+# Khởi tạo bộ nhớ đếm thời gian cho tính năng gửi báo cáo tổng kết 30 phút
+if "last_summary_time" not in st.session_state:
+    st.session_state.last_summary_time = time.time()
+if "summary_data_accumulator" not in st.session_state:
+    st.session_state.summary_data_accumulator = {}
+
 # Cấu hình giá trị mặc định cho Hệ thống
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 200  
+    st.session_state.whale_threshold = 100  
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
@@ -72,18 +78,18 @@ if "channel_vip" not in st.session_state:
 if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
-# Danh sách URLs theo dõi mục tiêu mặc định
+# Danh sách URLs theo dõi mục tiêu mặc định ban đầu
 RAW_URL_LIST = """
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026 
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026
 https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-25-2026
  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-25-2026
  https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-25-2026
   https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-25-2026
- https://polymarket.com/vi/event/highest-temperature-in-london-on-june-25-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-london-on-june-25-2026  
    https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-25-2026
-   https://polymarket.com/event/highest-temperature-in-madrid-on-june-25-2026
+    https://polymarket.com/event/highest-temperature-in-madrid-on-june-25-2026
     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-25-2026  
     https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-25-2026 
 https://polymarket.com/event/highest-temperature-in-new-york-on-june-25-2026  
@@ -108,22 +114,22 @@ default_slugs = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n")
 if "target_slugs" not in st.session_state:
     st.session_state.target_slugs = default_slugs
 
-# --- ⚙️ SIDEBAR CONTROL PANEL CONTROL ---
+# --- ⚙️ SIDEBAR CONTROL PANEL ---
 with st.sidebar:
-    st.header("⚙️ Cấu hình Engine V51.2")
+    st.header("⚙️ Cấu hình Engine V51.3")
     tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
     
     st.write("---")
     st.header("📢 Định tuyến Kênh Telegram")
     id_vip_input = st.text_input("ID Kênh VIP (Cá Voi):", value=st.session_state.channel_vip)
-    id_ngach_input = st.text_input("ID Kênh Ngách (Gom Sớm/Xả Lỗ):", value=st.session_state.channel_ngach)
+    id_ngach_input = st.text_input("ID Kênh Ngách (Tổng Kết / Gom Sớm):", value=st.session_state.channel_ngach)
 
     st.write("---")
     st.header("🛡️ Bộ lọc Volume & Quét")
     threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 50, 2000, value=st.session_state.whale_threshold, step=50)
     refresh_input = st.slider("Tần suất quét làm mới (giây):", 5, 60, value=st.session_state.refresh_rate)
     
-    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V51.2", use_container_width=True):
+    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V51.3", use_container_width=True):
         st.session_state.whale_threshold = threshold_input
         st.session_state.refresh_rate = refresh_input
         st.session_state.tg_token = tg_token_input
@@ -139,7 +145,7 @@ st.subheader(f"📋 Thị trường đang theo dõi chiến thuật (Top 6 Bins 
 slugs_text = st.text_area(
     "Nhập danh sách Link sự kiện Polymarket cần quét:", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.target_slugs]),
-    height=110
+    height=120
 )
 
 current_input_slugs = [extract_slug(line) for line in slugs_text.split("\n") if extract_slug(line)]
@@ -248,7 +254,7 @@ for target_slug in st.session_state.target_slugs:
                         f"📌 *Mốc:* `{mốc_đấu}`\n"
                         f"💵 *Mức giá:* `{price_cents:.2f}¢`\n"
                         f"💰 *Tiền vào ròng:* *${delta_cash:,.2f}*\n"
-                        f"📊 *Tổng vốn vị thế hiện tại:* *${real_usd:,.2f}*"  # FIXED: Thêm hiển thị tổng vốn trên Telegram
+                        f"📊 *Tổng vốn vị thế hiện tại:* *${real_usd:,.2f}*"
                     )
                     send_telegram(st.session_state.channel_vip, urgent_msg)
                     st.session_state.last_whale_alert_v47[history_key] = current_now
@@ -263,7 +269,7 @@ for target_slug in st.session_state.target_slugs:
                         f"📌 *Nhánh:* `{mốc_đấu}`\n"
                         f"💵 *Mức giá:* `{price_cents:.2f}¢`\n"
                         f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
-                        f"📊 *Tổng vốn vị thế:* *${real_usd:,.2f}*"  # FIXED: Thêm hiển thị tổng vốn trên Telegram
+                        f"📊 *Tổng vốn vị thế hiện tại:* *${real_usd:,.2f}*"
                     )
                     send_telegram(st.session_state.channel_ngach, gom_msg)
                     st.session_state.last_signal_time[history_key] = current_now
@@ -277,10 +283,8 @@ for target_slug in st.session_state.target_slugs:
                 else:
                     flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f})"
 
-        # --- ⚽ PHẦN 2: ENGINE QUÉT TRẠNG THÁI GIÁ (CHỐT LỜI & CẮT LỖ THỂ THAO / THỜI TIẾT) ---
+        # --- ⚽ PHẦN 2: ENGINE QUÉT TRẠNG THÁI GIÁ (CHỐT LỜI & CẮT LỖ CHỦ ĐỘNG) ---
         if previous_cents is not None and previous_cents != price_cents:
-            
-            # Cắt lỗ khẩn cấp khi sập sâu sát đáy sàn 
             if price_cents <= 0.05:
                 flow_type = "🚨 ÉP LỆNH XẢ HÀNG (CẮT LỖ)"
                 loss_msg = (
@@ -289,11 +293,10 @@ for target_slug in st.session_state.target_slugs:
                     f"📌 *Nhánh:* ({mốc_đấu})\n"
                     f"🚨 *Trạng thái:* CHỐT CHẶN TỬ THẦN: Cửa cược sập tiệm cận sàn nguy hiểm!\n"
                     f"📉 *Giá cũ:* `{previous_cents:.2f}¢` ➡️ *Hiện tại:* `{price_cents:.2f}¢`\n"
-                    f"📊 *Tổng vốn vị thế còn lại:* *${real_usd:,.2f}*"  # FIXED: Thêm hiển thị tổng vốn trên Telegram
+                    f"📊 *Tổng vốn vị thế còn lại:* *${real_usd:,.2f}*"
                 )
                 send_telegram(st.session_state.channel_ngach, loss_msg)
             
-            # Chốt lời khi tăng trưởng nhảy vọt vượt kỳ vọng (> 15 cents)
             elif price_cents - previous_cents >= 15.0:
                 flow_type = "💰 CHỐT LỜI HỢP LÝ"
                 profit_msg = (
@@ -302,19 +305,48 @@ for target_slug in st.session_state.target_slugs:
                     f"📌 *Nhánh:* ({mốc_đấu})\n"
                     f"🚀 *Trạng thái:* Giá cược tăng mạnh, đạt điểm chốt lời an toàn.\n"
                     f"📈 *Giá cũ:* `{previous_cents:.2f}¢` ➡️ *Giá mới hiện tại:* `{price_cents:.2f}¢`\n"
-                    f"📊 *Tổng vốn vị thế hiện tại:* *${real_usd:,.2f}*"  # FIXED: Thêm hiển thị tổng vốn trên Telegram
+                    f"📊 *Tổng vốn vị thế hiện tại:* *${real_usd:,.2f}*"
                 )
                 send_telegram(st.session_state.channel_ngach, profit_msg)
 
-        # Lưu lại dữ liệu vào bộ nhớ đệm Session State
+        # Lưu lại vào bộ nhớ cache dữ liệu
         st.session_state.price_history[history_key] = real_usd
         st.session_state.cents_price_history[history_key] = price_cents
-        
         analysis_labels.append(flow_type)
 
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-# Cơ chế tự động làm mới vòng lặp vô hạn
+    # --- 🕒 PHẦN 3: ĐÓNG GÓI DỮ LIỆU TOP 3 BINS CHO BÁO CÁO 30 PHÚT ---
+    top3_df = df.head(3)
+    bin_strings = []
+    for _, r in top3_df.iterrows():
+        bin_strings.append(f"  • {r['Nhánh Cược (Bin)']}: *{r['Giá (Cents)']:.1f}¢* (Vốn: `${r['Tổng vốn vị thế ($)']:,.2f}`)")
+    
+    st.session_state.summary_data_accumulator[title] = {
+        "label": asset_label,
+        "bins_info": "\n".join(bin_strings)
+    }
+
+# --- 🛰️ KIỂM TRA ĐIỀU KIỆN 30 PHÚT (1800 GIÂY) ĐỂ BẮN BÁO CÁO TỔNG KẾT ---
+if current_now - st.session_state.last_summary_time >= 1800:
+    if st.session_state.summary_data_accumulator:
+        summary_msg = "📊 *[BÁO CÁO TỔNG KẾT ĐỊNH KỲ 30 PHÚT]* 📊\n"
+        summary_msg += "====================================\n\n"
+        
+        for city_title, content in st.session_state.summary_data_accumulator.items():
+            summary_msg += f"🏙️ *Thị trường:* {city_title.upper()}\n"
+            summary_msg += f"🏷️ *Phân loại:* `{content['label']}`\n"
+            summary_msg += f"🔥 *Top 3 Bins vốn lớn nhất thực tế:*\n{content['bins_info']}\n"
+            summary_msg += "------------------------------------\n\n"
+        
+        # Bắn báo cáo tổng kết gom gọn về Kênh Ngách
+        send_telegram(st.session_state.channel_ngach, summary_msg)
+        
+        # Reset chu kỳ 30 phút mới
+        st.session_state.last_summary_time = current_now
+        st.session_state.summary_data_accumulator = {}
+
+# Tự động reload theo tần suất cài đặt ở Slider
 time.sleep(REFRESH_TIME)
 st.rerun()
