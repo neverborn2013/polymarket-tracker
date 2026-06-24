@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V49.1 Multi-Asset Pro", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V49.2 Multi-Asset Pro", layout="wide")
 
 # --- 🎨 CSS INTERFACE ---
 st.markdown(
@@ -43,7 +43,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🚀 POLYMARKET RADAR V49.1 - PHÂN TÁCH BIẾN ĐỘNG SÀN CỐ ĐỊNH")
+st.title("🚀 POLYMARKET RADAR V49.2 - BỔ SUNG TỔNG VỊ THẾ LŨY KẾ")
 
 # Khởi tạo bộ nhớ đệm trạng thái hệ thống
 if "last_whale_alert_v47" not in st.session_state:
@@ -174,8 +174,8 @@ if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
 with st.sidebar:
-    with st.form(key="config_form_v49_1"):
-        st.header("🔌 Cấu hình Hệ thống V49.1")
+    with st.form(key="config_form_v49_2"):
+        st.header("🔌 Cấu hình Hệ thống V49.2")
         tg_token_input = st.text_input("Bot Token chung:", value=st.session_state.tg_token, type="password")
         
         st.write("---")
@@ -188,7 +188,7 @@ with st.sidebar:
         threshold_input = st.slider("Ngưỡng Cá Mập ($):", 100, 5000, value=st.session_state.whale_threshold, step=50)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="🚀 ĐỒNG BỘ ENGINE V49.1", use_container_width=True)
+        submit_button = st.form_submit_button(label="🚀 ĐỒNG BỘ ENGINE V49.2", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -196,7 +196,7 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("✅ Đã giải phóng bộ lọc rủi ro cố định mảng thời tiết!")
+            st.toast("✅ Đã cập nhật cấu hình Telegram mới!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
@@ -300,7 +300,7 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # --- LOGIC CHỐT LỜI / CẮT LỖ THEO MẢNG THỂ THAO ---
+        # --- LOGIC CHỐT LỜI / CẮT LỖ PHÂN TẦNG THỂ THAO ---
         if previous_cents is not None:
             if history_key in st.session_state.reported_tele_keys:
                 entry_price = st.session_state.entry_price_history.get(history_key, previous_cents)
@@ -343,7 +343,7 @@ for target_slug in st.session_state.city_slugs:
 
         st.session_state.cents_price_history[history_key] = price_cents
 
-        # --- FIX CƠ CHẾ GÁC CỔNG RỦI RO ĐỘC LẬP V49.1 ---
+        # --- PHÂN LOẠI CƠ CHẾ GÁC CỔNG RỦI RO ---
         if previous_usd is None:
             flow_type = "🔄 KHỞI TẠO NỀN"
         else:
@@ -351,12 +351,10 @@ for target_slug in st.session_state.city_slugs:
             cent_part = round(real_usd - int(real_usd), 2)
             
             if is_sensitive_asset:
-                # FIX: Mảng thời tiết/crypto hạ hẳn sàn lọc bot xuống mức cố định $50 để không bóp chết dòng tiền khi kéo sidebar cá mập lên cao
                 is_price_too_high_or_low = price_cents > 99.0 or price_cents < 0.1
                 is_invalid_delta = delta_cash < 50.0 or delta_cash > 100000.0
                 is_bot_pattern = is_invalid_delta or is_price_too_high_or_low
             else:
-                # Giữ nguyên gác cổng nghiêm ngặt bảo vệ mảng thể thao bóng đá
                 is_price_too_high_or_low = price_cents > 93.0 or price_cents < 4.0
                 is_invalid_delta = delta_cash < (whale_threshold_usd * 0.35) or delta_cash > 35000.0
                 is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
@@ -367,17 +365,19 @@ for target_slug in st.session_state.city_slugs:
                 last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
                 current_threshold = whale_threshold_usd if not is_sensitive_asset else (whale_threshold_usd * 0.4)
                 
+                # BỔ SUNG: Hiển thị thêm Tổng vị thế thực tế lũy kế trong báo cáo Telegram
                 if delta_cash >= current_threshold:
                     flow_type = "👑 [VIP] CÁ VOI KHỦNG"
                     st.markdown(f'<div class="whale-real-alert">👑 CÁ VOI PHÁT HIỆN 👑 Vị thế: {mốc_đấu} | Biến động: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[PHÁT HIỆN CÁ VOI] HỆ THỐNG V49.1* 👑\n\n"
+                            f"👑 *[PHÁT HIỆN CÁ VOI] HỆ THỐNG V49.2* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Vị thế:* `{mốc_đấu}`\n"
                             f"💵 *Mức giá:* `{price_cents:.2f}¢`\n"
-                            f"💰 *Tiền vào ròng:* *${delta_cash:,.2f}*"
+                            f"💰 *Tiền vào ròng:* *${delta_cash:,.2f}*\n"
+                            f"📊 *Tổng vị thế:* *${real_usd:,.2f}*"
                         )
                         send_telegram(st.session_state.channel_vip, urgent_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
@@ -386,14 +386,15 @@ for target_slug in st.session_state.city_slugs:
                             st.session_state.reported_tele_keys.append(history_key)
                             st.session_state.entry_price_history[history_key] = price_cents
                         
-                elif delta_cash >= 50.0: # Hạ sàn gom sớm mảng nhách xuống 50$ đối với mảng đặc thù
+                elif delta_cash >= 50.0:
                     flow_type = "🐟 [NGÁCH] GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[TÍN HIỆU GOM SỚM] HỆ THỐNG V49.1* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM] HỆ THỐNG V49.2* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Nhánh:* `{mốc_đấu}`\n"
-                            f"💰 *Tiền ròng:* *${delta_cash:,.2f}*"
+                            f"💰 *Tiền ròng:* *${delta_cash:,.2f}*\n"
+                            f"📊 *Tổng vị thế:* *${real_usd:,.2f}*"
                         )
                         send_telegram(st.session_state.channel_ngach, ngach_msg)
                         st.session_state.last_whale_alert_v47[history_key] = current_now
