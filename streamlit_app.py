@@ -80,6 +80,7 @@ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026
   https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-25-2026
   https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-25-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-25-2026
   https://polymarket.com/vi/event/highest-temperature-in-london-on-june-25-2026    
    https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-25-2026
      https://polymarket.com/event/highest-temperature-in-madrid-on-june-25-2026
