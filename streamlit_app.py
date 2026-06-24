@@ -62,24 +62,11 @@ if "reported_tele_keys" not in st.session_state:
 
 # Danh sách URL mặc định để hệ thống theo dõi
 RAW_URL_LIST = """
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-24-2026 
-  https://polymarket.com/event/highest-temperature-in-singapore-on-june-24-2026  
- https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-taipei-on-june-24-2026
+ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-24-2026 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-24-2026
-https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
- https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-24-2026
-https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-24-2026   
- https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-24-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-24-2026   
-  https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-24-20226
- https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-24-2026
-https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-24-2026   
-https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-24-2026 
- https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-24-2026   
- https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-24-2026  
+  https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
+   https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-24-2026
+    https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-24-2026  
 https://polymarket.com/vi/event/what-price-will-ethereum-hit-june-22-28-2026
 https://polymarket.com/vi/sports/world-cup/fifwc-che-can-2026-06-24
 https://polymarket.com/vi/sports/world-cup/fifwc-bih-qat-2026-06-24
