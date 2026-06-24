@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V50.0 Fixed Volume", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V51.0 Strict Filter", layout="wide")
 
 # --- 🎨 CHUẨN HÓA GIAO DIỆN HỆ THỐNG ---
 st.markdown(
@@ -44,9 +44,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("📊 POLYMARKET RADAR V50.0 - KHÓA TỰ ĐỘNG CHUẨN NGƯỠNG VOLUME")
+st.title("📊 POLYMARKET RADAR V51.0 - SỬA LỖI TRÀN DÒNG TIỀN NHỎ LẺ")
 
-# --- KHỞI TẠO VÀ ĐỒNG BỘ TRẠNG THÁI CACHING TUYỆT ĐỐI ĐỂ KHÔNG MẤT DỮ LIỆU ---
+# --- KHỞI TẠO VÀ ĐỒNG BỘ TRẠNG THÁI CACHING ---
 if "price_history" not in st.session_state:
     st.session_state.price_history = {}
 if "cents_price_history" not in st.session_state:
@@ -60,7 +60,6 @@ if "reported_tele_keys" not in st.session_state:
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
 
-# Khởi tạo các giá trị cấu hình nếu chưa tồn tại
 if "whale_threshold" not in st.session_state:
     st.session_state.whale_threshold = 200  
 if "refresh_rate" not in st.session_state:
@@ -72,7 +71,6 @@ if "channel_vip" not in st.session_state:
 if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
-# Danh sách thành phố lấy dữ liệu mẫu
 RAW_URL_LIST = """
 https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-24-2026 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-24-2026
@@ -106,9 +104,9 @@ default_slugs = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n")
 if "target_slugs" not in st.session_state:
     st.session_state.target_slugs = default_slugs
 
-# --- SIDEBAR CONTROL PANEL BẢN V50.0 ---
+# --- CONTROL PANEL ---
 with st.sidebar:
-    st.header("⚙️ Cấu hình Engine V50.0")
+    st.header("⚙️ Cấu hình Engine V51.0")
     tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
     
     st.write("---")
@@ -119,19 +117,17 @@ with st.sidebar:
     st.write("---")
     st.header("🛡️ Quản trị bộ lọc Volume")
     
-    # Ép cố định bộ lưu trữ ngay trên sự kiện thay đổi của Widget slider
     threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 50, 2000, value=st.session_state.whale_threshold, step=50)
     refresh_input = st.slider("Tần suất quét làm mới (giây):", 5, 60, value=st.session_state.refresh_rate)
     
-    if st.button("⚡ ĐỒNG BỘ ENGINE KHÓA VOLUME", use_container_width=True):
+    if st.button("⚡ ĐỒNG BỘ ENGINE V51.0", use_container_width=True):
         st.session_state.whale_threshold = threshold_input
         st.session_state.refresh_rate = refresh_input
         st.session_state.tg_token = tg_token_input
         st.session_state.channel_vip = id_vip_input.strip()
         st.session_state.channel_ngach = id_ngach_input.strip()
-        st.toast(f"🔒 Đã khóa cứng bộ lọc! Chỉ quét Volume từ ${st.session_state.whale_threshold} trở lên!")
+        st.toast(f"🔒 Đã cập nhật ngưỡng lọc ròng tối thiểu: ${st.session_state.whale_threshold}")
 
-# Gán biến tĩnh chạy thuật toán để không bị tuột giá trị khi rerun
 WHALE_LIMIT = float(st.session_state.whale_threshold)
 REFRESH_TIME = int(st.session_state.refresh_rate)
 TELEGRAM_TOKEN = st.session_state.tg_token
@@ -157,9 +153,6 @@ def get_polymarket_top6_data(slug):
             market_title = event_data.get("title", "Sự Kiện Polymarket")
             markets_list = event_data.get("markets", [])
             
-            title_lower = market_title.lower()
-            is_weather = "°c" in title_lower or "temperature" in title_lower or "°f" in title_lower
-
             raw_bins = []
             for m in markets_list:
                 full_title = m.get("title", "")
@@ -184,7 +177,6 @@ def get_polymarket_top6_data(slug):
             df_raw = pd.DataFrame(raw_bins)
             if df_raw.empty: return None
 
-            # Sắp xếp và trích xuất đúng 6 bins có vốn lớn nhất
             df_raw = df_raw.sort_values(by="Total_Asset_Value", ascending=False).head(6)
 
             final_data = []
@@ -195,7 +187,7 @@ def get_polymarket_top6_data(slug):
                     "Giá (Cents)": float(f"{row['YES_Price']:.2f}"), 
                     "Tổng vốn vị thế ($)": row['Total_Asset_Value']
                 })
-            return {"title": market_title, "df": pd.DataFrame(final_data), "is_weather": is_weather}
+            return {"title": market_title, "df": pd.DataFrame(final_data)}
         return None
     except: return None
 
@@ -214,7 +206,6 @@ for target_slug in st.session_state.target_slugs:
         
     title = data["title"]
     df = data["df"]
-    is_weather_mode = data["is_weather"]
     analysis_labels = []
     
     st.markdown(f'<div class="market-header">📡 RADAR GÁC CỔNG [ TOP 6 BINS VỐN CAO ]: {title.upper()}</div>', unsafe_allow_html=True)
@@ -228,43 +219,47 @@ for target_slug in st.session_state.target_slugs:
         history_key = f"{target_slug}_{mốc_đấu}_{hướng_cược}"
         previous_usd = st.session_state.price_history.get(history_key, None)
         
-        # Thiết lập mặc định
         flow_type = "🔄 ỔN ĐỊNH NỀN"
 
         if previous_usd is not None:
             delta_cash = abs(real_usd - previous_usd)
             
-            # --- THUẬT TOÁN KHÓA CỨNG THEO ĐÚNG ĐIỀU KIỆN THANH TRƯỢT SLIDER ---
+            # --- 🛠️ THUẬT TOÁN ƯU TIÊN SẮP XẾP VOLUME (ƯU TIÊN SLIDER) ---
             if delta_cash >= WHALE_LIMIT:
                 flow_type = "👑 [VIP] CÁ VOI KHỦNG"
-                st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN CÁ VOI ĐẠT CHUẨN V50.0 | Nhánh: {mốc_đấu} | Lệnh ròng: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN CÁ VOI ĐẠT CHUẨN V51.0 | Nhánh: {mốc_đấu} | Lệnh ròng: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
                 
                 last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
                 if current_now - last_alert_time > 20:
                     urgent_msg = (
-                        f"👑 *[CÁ VOI KHỦNG PHÁT HIỆN BIẾN ĐỘNG]* 👑\n\n"
+                        f"👑 *[CÁ VOI KHỦNG BIẾN ĐỘNG THỰC THẾ]* 👑\n\n"
                         f"🏆 *Thị trường:* {title}\n"
                         f"📌 *Mốc:* `{mốc_đấu}`\n"
                         f"💵 *Mức giá:* `{price_cents:.2f}¢`\n"
-                        f"💰 *Tiền vào ròng:* *${delta_cash:,.2f}* (Đã vượt ngưỡng cấu hình ${WHALE_LIMIT})"
+                        f"💰 *Tiền vào ròng:* *${delta_cash:,.2f}* (Đã vượt ngưỡng ${WHALE_LIMIT})"
                     )
                     send_telegram(st.session_state.channel_vip, urgent_msg)
                     st.session_state.last_whale_alert_v47[history_key] = current_now
                     
-            elif delta_cash >= (WHALE_LIMIT * 0.3):
-                # Nhóm gom sớm tự động co giãn bằng 30% ngưỡng cá voi để không bị xuất hiện tràn lan dòng tiền nhỏ lẻ
+            elif delta_cash >= (WHALE_LIMIT * 0.4):
                 flow_type = "🐟 [NGÁCH] GOM SỚM"
-            else:
-                # Tất cả biến động ròng dưới mức này đều bị gom vào Nhỏ lẻ, không đẩy sang Bot nữa
+            
+            # Nếu tiền nhỏ hơn rất nhiều so với slider của bạn, ép thẳng về Nhỏ lẻ, KHÔNG ĐỂ lọt vào hàm check Bot
+            elif delta_cash < 5.0:
                 flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f})"
+                
+            else:
+                # Chỉ những biến động nhỡ tầm trung (nằm ngoài nhỏ lẻ và cá voi) mới kiểm tra mẫu hình Bot Market Maker
+                if price_cents > 99.0 or price_cents < 0.1:
+                    flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
+                else:
+                    flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f})"
         
-        # Lưu lại trạng thái dòng vốn thực tế cho chu kỳ tiếp theo vào Session State
         st.session_state.price_history[history_key] = real_usd
         analysis_labels.append(flow_type)
 
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-# Lệnh refresh chu kỳ quét thông minh 
 time.sleep(REFRESH_TIME)
 st.rerun()
