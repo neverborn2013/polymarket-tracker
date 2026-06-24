@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V49.3 Multi-Asset Pro", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V49.4 Multi-Asset Pro", layout="wide")
 
 # --- 🎨 CSS INTERFACE ---
 st.markdown(
@@ -43,7 +43,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🚀 POLYMARKET RADAR V49.3 - ĐỒNG BỘ ENGINE LIÊN NỀN TẢNG")
+st.title("🚀 POLYMARKET RADAR V49.4 - FIX LỖI BÁO ĐỘNG HẾT TRẬN")
 
 # Khởi tạo bộ nhớ đệm trạng thái hệ thống
 if "last_whale_alert_v47" not in st.session_state:
@@ -62,63 +62,23 @@ if "reported_tele_keys" not in st.session_state:
 # Danh sách URL theo dõi mặc định
 RAW_URL_LIST = """
 https://polymarket.com/event/highest-temperature-in-tokyo-on-june-24-2026 
-  https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
   https://polymarket.com/event/highest-temperature-in-singapore-on-june-24-2026  
- https://polymarket.com/event/highest-temperature-in-new-york-on-june-24-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-24-2026   
- https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-24-2026 
  https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-24-2026
  https://polymarket.com/vi/event/highest-temperature-in-taipei-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-beijing-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-chongqing-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-wuhan-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-lucknow-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-qingdao-on-june-24-2026
-  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-24-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-shenzhen-on-june-24-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-chengdu-on-june-24-2026  
- https://polymarket.com/vi/event/highest-temperature-in-guangzhou-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-kuala-lumpur-on-june-24-2026  
- https://polymarket.com/vi/event/highest-temperature-in-manila-on-june-24-2026  
-  https://polymarket.com/vi/event/highest-temperature-in-busan-on-june-24-2026 
- https://polymarket.com/vi/event/highest-temperature-in-karachi-on-june-24-20226 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-24-2026
  https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-24-2026
- https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
+https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
  https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-24-2026
 https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-24-2026   
  https://polymarket.com/vi/event/highest-temperature-in-istanbul-on-june-24-2026 
-  https://polymarket.com/vi/event/highest-temperature-in-ankara-on-june-24-2026    
-https://polymarket.com/vi/event/highest-temperature-in-warsaw-on-june-24-2026 
- https://polymarket.com/vi/event/highest-temperature-in-helsinki-on-june-24-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-24-2026   
+  https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
  https://polymarket.com/vi/event/highest-temperature-in-amsterdam-on-june-24-20226
  https://polymarket.com/vi/event/highest-temperature-in-moscow-on-june-24-2026
+https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-24-2026   
+https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-24-2026 
  https://polymarket.com/vi/event/highest-temperature-in-nyc-on-june-24-2026   
  https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-24-2026  
- https://polymarket.com/vi/event/highest-temperature-in-chicago-on-june-24-2026   
- https://polymarket.com/vi/event/highest-temperature-in-houston-on-june-24-2026   
- https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-24-2026   
-https://polymarket.com/vi/event/highest-temperature-in-los-angeles-on-june-24-2026 
- https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-24-2026    
-https://polymarket.com/vi/event/highest-temperature-in-seattle-on-june-24-2026   
-https://polymarket.com/vi/event/highest-temperature-in-denver-on-june-24-2026    
-https://polymarket.com/vi/event/highest-temperature-in-dallas-on-june-24-2026  
- https://polymarket.com/vi/event/highest-temperature-in-austin-on-june-24-202   
-https://polymarket.com/vi/event/highest-temperature-in-toronto-on-june-24-2026 
-https://polymarket.com/vi/sports/world-cup/fifwc-arg-aut-2026-06-22
-https://polymarket.com/vi/sports/world-cup/fifwc-fra-irq-2026-06-22
-https://polymarket.com/vi/sports/world-cup/fifwc-nor-sen-2026-06-22
-https://polymarket.com/vi/sports/world-cup/fifwc-jor-alg-2026-06-22
-https://polymarket.com/vi/sports/world-cup/fifwc-prt-uzb-2026-06-23
-https://polymarket.com/vi/sports/world-cup/fifwc-eng-gha-2026-06-23
-https://polymarket.com/vi/sports/world-cup/fifwc-pan-hrv-2026-06-23
-https://polymarket.com/vi/sports/world-cup/fifwc-col-cdr-2026-06-23
-https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
-https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
-https://polymarket.com/event/us-gdp-q1-2026-final-reading
-https://polymarket.com/event/solana-ath-in-june-2026
-https://polymarket.com/vi/esports/dota-2/the-international/dota2-rnx-grind-2026-06-23
-https://polymarket.com/vi/event/what-price-will-bitcoin-hit-june-22-28-2026
 https://polymarket.com/vi/event/what-price-will-ethereum-hit-june-22-28-2026
 https://polymarket.com/vi/sports/world-cup/fifwc-che-can-2026-06-24
 https://polymarket.com/vi/sports/world-cup/fifwc-bih-qat-2026-06-24
@@ -129,25 +89,7 @@ https://polymarket.com/vi/sports/world-cup/fifwc-rsa-kr-2026-06-24
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-ath-in-june-2026
-https://polymarket.com/event/euro-2026-winner
-https://polymarket.com/event/copa-america-2026-winner
-https://polymarket.com/event/nba-championship-2026
-https://polymarket.com/event/presidential-election-2026
-https://polymarket.com/event/republican-nominee-2026
-https://polymarket.com/event/democratic-nominee-2026
-https://polymarket.com/event/us-initial-jobless-claims-june-25-2026
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-24-2026
-https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
-https://polymarket.com/event/highest-temperature-in-new-york-on-june-24-2026
-https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
-https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
-https://polymarket.com/event/solana-above-210-on-june-26-2026
-https://polymarket.com/vi/event/what-price-will-ethereum-hit-on-june-24
-https://polymarket.com/vi/event/what-price-will-bitcoin-hit-on-june-24
-https://polymarket.com/vi/event/what-price-will-xrp-hit-on-june-24
-https://polymarket.com/vi/event/elon-musk-of-tweets-june-19-june-26
 """
-
 def extract_slug(url_str):
     try:
         cleaned_url = url_str.strip().rstrip('/')
@@ -163,7 +105,7 @@ default_cities = [extract_slug(line) for line in RAW_URL_LIST.strip().split("\n"
 if "city_slugs" not in st.session_state:
     st.session_state.city_slugs = default_cities
 if "whale_threshold" not in st.session_state:
-    st.session_state.whale_threshold = 100  # Mặc định để 100$ để bắt sóng nhạy theo yêu cầu
+    st.session_state.whale_threshold = 100  
 if "refresh_rate" not in st.session_state:
     st.session_state.refresh_rate = 8
 if "tg_token" not in st.session_state:
@@ -175,8 +117,8 @@ if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
 with st.sidebar:
-    with st.form(key="config_form_v49_3"):
-        st.header("🔌 Cấu hình Hệ thống V49.3")
+    with st.form(key="config_form_v49_4"):
+        st.header("🔌 Cấu hình Hệ thống V49.4")
         tg_token_input = st.text_input("Bot Token chung:", value=st.session_state.tg_token, type="password")
         
         st.write("---")
@@ -189,7 +131,7 @@ with st.sidebar:
         threshold_input = st.slider("Ngưỡng Cá Mập ($):", 100, 5000, value=st.session_state.whale_threshold, step=50)
         refresh_input = st.slider("Tốc độ quét (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="🚀 ĐỒNG BỘ ENGINE V49.3", use_container_width=True)
+        submit_button = st.form_submit_button(label="🚀 ĐỒNG BỘ ENGINE V49.4", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -197,7 +139,7 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("✅ Đã tối ưu hóa gác cổng cố định mảng Thể thao & Crypto!")
+            st.toast("✅ Đã kích hoạt bộ lọc triệt tiêu báo động ảo sau trận đấu!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
@@ -301,7 +243,7 @@ for target_slug in st.session_state.city_slugs:
         
         flow_type = "⚪ Nhỏ lẻ"
 
-        # --- CHỐT CHẶN PHÂN TẦNG (GIỮ NGUYÊN 100% LUẬT CŨ) ---
+        # --- CHỐT CHẶN PHÂN TẦNG (TÍNH NĂNG KHÓA KHI HẾT TRẬN ĐẤU ĐÃ ĐƯỢC TÍCH HỢP) ---
         if previous_cents is not None:
             if history_key in st.session_state.reported_tele_keys:
                 entry_price = st.session_state.entry_price_history.get(history_key, previous_cents)
@@ -313,22 +255,27 @@ for target_slug in st.session_state.city_slugs:
                 is_trigger_sl = False
                 reason_sl = ""
                 
-                if is_sensitive_asset:
-                    if price_cents <= 0.2:
-                        is_trigger_sl = True
-                        reason_sl = f"🚨 CHỐT CHẶN KHẨN CẤP: Nhánh phi thể thao sập tiệm cận đáy `{price_cents:.2f}¢`"
+                # SỬA LỖI: Nếu giá trước đó đã cực thấp và hiện tại vẫn nằm im ở mức sát đáy (0.0 hoặc 0.05),
+                # có nghĩa là trận đấu ĐÃ KẾT THÚC và nhánh này ĐÃ THUA. Chặn không cho bắn Telegram spam lỗi.
+                if previous_cents <= 0.1 and price_cents <= 0.1:
+                    is_trigger_sl = False
                 else:
-                    if price_cents <= 4.0:
-                        is_trigger_sl = True
-                        reason_sl = f"🚨 CHỐT CHẶN TỬ THẦN: Cửa thể thao sập chạm sàn nguy hiểm `{price_cents:.1f}¢`"
-                
-                if not is_trigger_sl and entry_price > 1.0:
-                    if entry_price > 50.0 and total_drop_cents >= 10.0:
-                        is_trigger_sl = True
-                        reason_sl = f"📉 Cửa trên gãy xu hướng: Giảm -{total_drop_cents:.1f} giá từ gốc `{entry_price:.1f}¢`"
-                    elif entry_price < 30.0 and (total_drop_cents / entry_price) >= 0.45:
-                        is_trigger_sl = True
-                        reason_sl = f"📉 Cửa dưới vỡ trận: Sập quá mức chịu đựng (>45%) từ gốc `{entry_price:.1f}¢`"
+                    if is_sensitive_asset:
+                        if price_cents <= 0.2 and previous_cents > 0.2:
+                            is_trigger_sl = True
+                            reason_sl = f"🚨 CHỐT CHẶN KHẨN CẤP: Nhánh phi thể thao sập tiệm cận đáy `{price_cents:.2f}¢`"
+                    else:
+                        if price_cents <= 4.0 and previous_cents > 4.0:
+                            is_trigger_sl = True
+                            reason_sl = f"🚨 CHỐT CHẶN TỬ THẦN: Cửa thể thao sập chạm sàn nguy hiểm `{price_cents:.1f}¢`"
+                    
+                    if not is_trigger_sl and entry_price > 1.0:
+                        if entry_price > 50.0 and total_drop_cents >= 10.0:
+                            is_trigger_sl = True
+                            reason_sl = f"📉 Cửa trên gãy xu hướng: Giảm -{total_drop_cents:.1f} giá từ gốc `{entry_price:.1f}¢`"
+                        elif entry_price < 30.0 and (total_drop_cents / entry_price) >= 0.45:
+                            is_trigger_sl = True
+                            reason_sl = f"📉 Cửa dưới vỡ trận: Sập quá mức chịu đựng (>45%) từ gốc `{entry_price:.1f}¢`"
 
                 if is_trigger_sl and allow_send_signal:
                     alert_sl = (
@@ -352,12 +299,10 @@ for target_slug in st.session_state.city_slugs:
             cent_part = round(real_usd - int(real_usd), 2)
             
             if is_sensitive_asset:
-                # Mảng đặc thù: Sàn lọc cố định $50, bỏ chặn thập phân đuôi số lẻ
                 is_price_too_high_or_low = price_cents > 99.0 or price_cents < 0.1
                 is_invalid_delta = delta_cash < 50.0 or delta_cash > 100000.0
                 is_bot_pattern = is_invalid_delta or is_price_too_high_or_low
             else:
-                # Mảng thể thao: Giữ nguyên luật nghiêm ngặt, cố định sàn $100 tránh lỗi phân loại khi hạ slider
                 is_price_too_high_or_low = price_cents > 93.0 or price_cents < 4.0
                 is_invalid_delta = delta_cash < 100.0 or delta_cash > 35000.0
                 is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
@@ -374,7 +319,7 @@ for target_slug in st.session_state.city_slugs:
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[PHÁT HIỆN CÁ VOI] HỆ THỐNG V49.3* 👑\n\n"
+                            f"👑 *[PHÁT HIỆN CÁ VOI] HỆ THỐNG V49.4* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Vị thế:* `{mốc_đấu}`\n"
                             f"💵 *Mức giá:* `{price_cents:.2f}¢`\n"
@@ -392,7 +337,7 @@ for target_slug in st.session_state.city_slugs:
                     flow_type = "🐟 [NGÁCH] GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[TÍN HIỆU GOM SỚM] HỆ THỐNG V49.3* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM] HỆ THỐNG V49.4* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Nhánh:* `{mốc_đấu}`\n"
                             f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
