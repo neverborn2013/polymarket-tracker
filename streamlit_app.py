@@ -74,20 +74,19 @@ if "channel_ngach" not in st.session_state:
 
 # Danh sách URLs theo dõi mục tiêu mặc định (Hỗ trợ đa nền tảng cả Thể thao và Thời tiết)
 RAW_URL_LIST = """
-https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-24-2026 
- https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-24-2026
-  https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
-   https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-24-2026
-     https://polymarket.com/event/highest-temperature-in-madrid-on-june-24-2026
-     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-24-2026   
-    https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-24-2026  
-https://polymarket.com/vi/event/what-price-will-ethereum-hit-june-22-28-2026
-https://polymarket.com/vi/sports/world-cup/fifwc-che-can-2026-06-24
-https://polymarket.com/vi/sports/world-cup/fifwc-bih-qat-2026-06-24
-https://polymarket.com/vi/sports/world-cup/fifwc-sco-bra-2026-06-24
-https://polymarket.com/vi/sports/world-cup/fifwc-mar-hai-2026-06-24
-https://polymarket.com/vi/sports/world-cup/fifwc-cze-mex-2026-06-24
-https://polymarket.com/vi/sports/world-cup/fifwc-rsa-kr-2026-06-24
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026 
+https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-25-2026
+  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-25-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-25-2026
+  https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-25-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-25-2026    
+   https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-25-2026
+     https://polymarket.com/event/highest-temperature-in-madrid-on-june-25-2026
+     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-25-2026   
+    https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-25-2026 
+https://polymarket.com/event/highest-temperature-in-new-york-on-june-25-2026  
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-25-2026    
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-ath-in-june-2026
