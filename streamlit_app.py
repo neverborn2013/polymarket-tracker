@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V49.8 Top Bins", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V49.9 Smart Filter", layout="wide")
 
 # --- 🎨 CHUẨN HÓA GIAO DIỆN CSS ---
 st.markdown(
@@ -44,7 +44,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("📊 POLYMARKET RADAR V49.8 - THUẬT TOÁN ĐỊNH VỊ TOP 6 BINS VỐN CAO NHẤT")
+st.title("🚀 POLYMARKET RADAR V49.9 - GIẢI PHÓNG BỘ LỌC BOT & ĐỊNH VỊ TOP 6 BINS")
 
 # Khởi tạo bộ nhớ đệm trạng thái hệ thống phòng tránh mất dữ liệu khi Rerun
 if "last_whale_alert_v47" not in st.session_state:
@@ -60,9 +60,9 @@ if "last_signal_time" not in st.session_state:
 if "reported_tele_keys" not in st.session_state:
     st.session_state.reported_tele_keys = []
 
-# Danh sách URL mặc định để hệ thống theo dõi
+# Danh sách URL theo dõi mặc định dựa trên cấu trúc các thành phố khí hậu của bạn
 RAW_URL_LIST = """
- https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-24-2026 
+https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-24-2026 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-24-2026
   https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-24-2026  
    https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-24-2026
@@ -108,8 +108,8 @@ if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
 with st.sidebar:
-    with st.form(key="config_form_v49_8"):
-        st.header("⚙️ Cấu hình Runtime V49.8")
+    with st.form(key="config_form_v49_9"):
+        st.header("⚙️ Cấu hình Engine V49.9")
         tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
         
         st.write("---")
@@ -118,11 +118,11 @@ with st.sidebar:
         id_ngach_input = st.text_input("ID Kênh Ngách (Gom Sớm):", value=st.session_state.channel_ngach)
 
         st.write("---")
-        st.header("🛡️ Quản trị bộ lọc")
-        threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 100, 5000, value=st.session_state.whale_threshold, step=50)
+        st.header("🛡️ Quản trị bộ lọc rủi ro")
+        threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 50, 2000, value=st.session_state.whale_threshold, step=25)
         refresh_input = st.slider("Tần suất quét làm mới (giây):", 5, 60, value=st.session_state.refresh_rate)
         
-        submit_button = st.form_submit_button(label="⚡ ĐỒNG BỘ ENGINE TOP 6 BINS", use_container_width=True)
+        submit_button = st.form_submit_button(label="⚡ ĐỒNG BỘ ENGINE V49.9 SMART", use_container_width=True)
         
         if submit_button:
             st.session_state.whale_threshold = threshold_input
@@ -130,7 +130,7 @@ with st.sidebar:
             st.session_state.tg_token = tg_token_input
             st.session_state.channel_vip = id_vip_input.strip()
             st.session_state.channel_ngach = id_ngach_input.strip()
-            st.toast("🚀 Hệ thống đã chuyển sang chế độ quét Top 6 Bins Vốn Cao Nhất!")
+            st.toast("🚀 Đã mở khóa bộ lọc thông minh, sẵn sàng bắt tín hiệu thật!")
 
 TELEGRAM_TOKEN = st.session_state.tg_token
 whale_threshold_usd = st.session_state.whale_threshold
@@ -138,7 +138,7 @@ refresh_rate = st.session_state.refresh_rate
 
 st.subheader(f"📋 Danh sách thành phố đang giám sát ({len(st.session_state.target_slugs)}):")
 slugs_text = st.text_area(
-    "Nhập danh sách URLs Polymarket tại đây:", 
+    "Danh sách URLs Polymarket mục tiêu:", 
     value="\n".join([f"https://polymarket.com/event/{s}" for s in st.session_state.target_slugs]),
     height=130
 )
@@ -175,7 +175,7 @@ def get_polymarket_top6_data(slug):
                 liquidity = float(m.get("liquidity", 0))
                 est_volume = round(liquidity / 4, 2)
                 
-                # Tính toán tổng vốn vị thế dự kiến
+                # Tính toán tổng vốn vị thế dựa trên thanh khoản thực tế
                 real_usd_yes = round((est_volume * price_yes) / 100, 2)
 
                 raw_bins.append({
@@ -188,7 +188,7 @@ def get_polymarket_top6_data(slug):
             df_raw = pd.DataFrame(raw_bins)
             if df_raw.empty: return None
 
-            # --- THUẬT TOÁN ĐỊNH VỊ: LỌC CHÍNH XÁC 6 BINS CÓ TỔNG VỐN VỊ THẾ CAO NHẤT ---
+            # Sắp xếp lấy đúng 6 nhánh cược (bins) có tổng vốn vị thế cao nhất
             df_raw = df_raw.sort_values(by="Total_Asset_Value", ascending=False).head(6)
 
             final_data = []
@@ -274,7 +274,7 @@ for target_slug in st.session_state.target_slugs:
 
                 if is_trigger_sl and allow_send_signal:
                     alert_sl = (
-                        f"🚨 *[BÁO ĐỘNG PHÂN LUỒNG: ÉP LỆNH XẢ HÀNG V49.8]* 🚨\n\n"
+                        f"🚨 *[BÁO ĐỘNG PHÂN LUỒNG: ÉP LỆNH XẢ HÀNG V49.9]* 🚨\n\n"
                         f"🏆 *Thị trường ({asset_label}):* {title}\n"
                         f"📌 *Nhánh:* `{mốc_đấu}`\n"
                         f"⚠️ *Lý do rủi ro:* {reason_sl}\n"
@@ -286,26 +286,30 @@ for target_slug in st.session_state.target_slugs:
 
         st.session_state.cents_price_history[history_key] = price_cents
 
-        # --- ENGINE BỘ LỌC HÀNH VI DÒNG TIỀN V49.8 ---
+        # --- ENGINE BỘ LỌC THÔNG MINH ĐÃ ĐƯỢC GIẢI PHÓNG V49.9 ---
         if previous_usd is None:
             flow_type = "🔄 KHỞI TẠO NỀN"
         else:
             delta_cash = abs(real_usd - previous_usd)
-            cent_part = round(real_usd - int(real_usd), 2)
             
+            # ĐIỀU CHỈNH: Nới lỏng hoàn toàn bộ lọc cho mảng thời tiết, tránh khóa nhầm lệnh nhỏ của người dùng
             if is_weather_mode:
-                is_price_too_high_or_low = price_cents > 99.0 or price_cents < 0.1
-                is_invalid_delta = delta_cash < 50.0 or delta_cash > 100000.0
+                is_price_too_high_or_low = price_cents > 99.5 or price_cents < 0.05
+                # Chỉ coi là Bot MM nếu biến động cực kỳ bất thường (Quá lớn > 200,000$ hoặc quá bé < 0.2$)
+                is_invalid_delta = delta_cash < 0.2 or delta_cash > 200000.0
                 is_bot_pattern = is_invalid_delta or is_price_too_high_or_low
             else:
                 is_price_too_high_or_low = price_cents > 95.0 or price_cents < 3.0
-                is_invalid_delta = delta_cash < 100.0 or delta_cash > 50000.0
+                is_invalid_delta = delta_cash < 5.0 or delta_cash > 50000.0
+                cent_part = round(real_usd - int(real_usd), 2)
                 is_bot_pattern = cent_part not in [0.0, 0.5] or is_invalid_delta or is_price_too_high_or_low
             
             if is_bot_pattern:
                 flow_type = "🤖 BOT MARKET MAKER (ĐÃ KHÓA)"
             else:
                 last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
+                
+                # Điều chỉnh ngưỡng bắt Cá Voi cho linh hoạt theo từng mảng
                 current_threshold = whale_threshold_usd if not is_weather_mode else (whale_threshold_usd * 0.4)
 
                 if delta_cash >= current_threshold:
@@ -314,7 +318,7 @@ for target_slug in st.session_state.target_slugs:
                     
                     if current_now - last_alert_time > 20:
                         urgent_msg = (
-                            f"👑 *[PHÁT HIỆN CÁ VOI {asset_label}] V49.8* 👑\n\n"
+                            f"👑 *[PHÁT HIỆN CÁ VOI {asset_label}] V49.9* 👑\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Chi tiết nhánh cược:* `{mốc_đấu}`\n"
                             f"💵 *Mức giá gom hợp lý:* `{price_cents:.2f}¢`\n"
@@ -328,11 +332,12 @@ for target_slug in st.session_state.target_slugs:
                             st.session_state.reported_tele_keys.append(history_key)
                             st.session_state.entry_price_history[history_key] = price_cents
                         
-                elif (is_weather_mode and delta_cash >= 50.0) or (not is_weather_mode and delta_cash >= 100.0):
+                elif (is_weather_mode and delta_cash >= 1.5) or (not is_weather_mode and delta_cash >= 50.0):
+                    # Đã hạ điều kiện tiền ròng xuống 1.5$ cho mảng Thời tiết để bắt được dòng tiền ngách sớm của user thực tế
                     flow_type = "🐟 [NGÁCH] GOM SỚM"
                     if current_now - last_alert_time > 20:
                         ngach_msg = (
-                            f"🐟 *[TÍN HIỆU GOM SỚM {asset_label}] V49.8* 🐟\n\n"
+                            f"🐟 *[TÍN HIỆU GOM SỚM {asset_label}] V49.9* 🐟\n\n"
                             f"🏆 *Thị trường:* {title}\n"
                             f"📌 *Nhánh:* `{mốc_đấu}`\n"
                             f"💰 *Lượng tiền vào ròng:* *${delta_cash:,.2f}*\n"
