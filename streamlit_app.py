@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V51.7 Premium", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V51.8 Premium", layout="wide")
 
 # --- 🎨 CHUẨN HÓA GIAO DIỆN HỆ THỐNG ---
 st.markdown(
@@ -44,7 +44,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🚀 POLYMARKET RADAR V51.7 - TỐI ƯU THỜI GIAN BÁO CÁO TỔNG KẾT")
+st.title("🚀 POLYMARKET RADAR V51.8 - QUICK-TEST 1 MIN & 30 MIN")
 
 # --- 💾 KHỞI TẠO BỘ NHỚ ĐỆM TRẠNG THÁI CACHING ---
 if "price_history" not in st.session_state:
@@ -56,15 +56,14 @@ if "last_signal_time" not in st.session_state:
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
 
-# --- 🕒 ĐIỀU CHỈNH LOGIC TIMER THEO YÊU CẦU ---
-# Lưu mốc thời gian khởi tạo chạy bot lần đầu tiên
+# --- 🕒 ĐIỀU CHỈNH LOGIC TIMER THEO YÊU CẦU KIỂM TRA NHANH ---
 if "bot_start_time" not in st.session_state:
     st.session_state.bot_start_time = time.time()
 if "last_summary_time" not in st.session_state:
     st.session_state.last_summary_time = st.session_state.bot_start_time
-# Biến cờ đánh dấu đã gửi báo cáo mồi 5 phút đầu tiên chưa
-if "is_first_5min_sent" not in st.session_state:
-    st.session_state.is_first_5min_sent = False
+# Cờ hiệu kiểm soát mốc gửi 1 phút đầu tiên
+if "is_first_1min_sent" not in st.session_state:
+    st.session_state.is_first_1min_sent = False
 
 if "summary_data_accumulator" not in st.session_state:
     st.session_state.summary_data_accumulator = {}
@@ -83,7 +82,7 @@ if "channel_ngach" not in st.session_state:
 
 # Danh sách URLs theo dõi mục tiêu mặc định ban đầu
 RAW_URL_LIST = """
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026 
 https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-25-2026 
@@ -91,19 +90,18 @@ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026
  https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-25-2026
   https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-25-2026
  https://polymarket.com/vi/event/highest-temperature-in-london-on-june-25-2026   
-   https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-25-2026
+   https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-25-2026 
     https://polymarket.com/event/highest-temperature-in-madrid-on-june-25-2026
     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-25-2026  
     https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-25-2026 
 https://polymarket.com/event/highest-temperature-in-new-york-on-june-25-2026  
- https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-25-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-25-2026    
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026 
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-ath-in-june-2026
 https://polymarket.com/vi/event/what-price-will-bitcoin-hit-june-22-28-2026
 https://polymarket.com/vi/event/what-price-will-bitcoin-hit-in-june-2026
 """
-
 def extract_slug(url_str):
     try:
         cleaned_url = url_str.strip().rstrip('/')
@@ -120,7 +118,7 @@ if "target_slugs" not in st.session_state:
 
 # --- ⚙️ SIDEBAR CONTROL PANEL ---
 with st.sidebar:
-    st.header("⚙️ Cấu hình Engine V51.7")
+    st.header("⚙️ Cấu hình Engine V51.8")
     tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
     
     st.write("---")
@@ -133,13 +131,13 @@ with st.sidebar:
     threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 50, 2000, value=st.session_state.whale_threshold, step=50)
     refresh_input = st.slider("Tần suất quét làm mới (giây):", 5, 60, value=st.session_state.refresh_rate)
     
-    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V51.7", use_container_width=True):
+    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V51.8", use_container_width=True):
         st.session_state.whale_threshold = threshold_input
         st.session_state.refresh_rate = refresh_input
         st.session_state.tg_token = tg_token_input
         st.session_state.channel_vip = id_vip_input.strip()
         st.session_state.channel_ngach = id_ngach_input.strip()
-        st.toast(f"🔒 Hệ thống đồng bộ hẹn giờ 5 phút & 30 phút thành công!")
+        st.toast(f"🔒 Đã cấu hình: Xuất tổng kết sau 1 phút chạy thử nghiệm!")
 
 WHALE_LIMIT = float(st.session_state.whale_threshold)
 REFRESH_TIME = int(st.session_state.refresh_rate)
@@ -219,16 +217,16 @@ def send_telegram(chat_id, message):
 current_now = time.time()
 st.write("---")
 
-# Hiển thị đồng hồ theo dõi trên UI
+# Hiển thị bộ đếm giám sát trực tiếp trên giao diện chính
 elapsed_from_start = current_now - st.session_state.bot_start_time
 elapsed_from_last_summary = current_now - st.session_state.last_summary_time
 
 col_t1, col_t2 = st.columns(2)
 with col_t1:
-    st.metric("Bot đã chạy liên tục", f"{int(elapsed_from_start // 60)} phút {int(elapsed_from_start % 60)} giây")
+    st.metric("⏱️ Tổng thời gian Bot đã chạy", f"{int(elapsed_from_start // 60)} phút {int(elapsed_from_start % 60)} giây")
 with col_t2:
-    target_wait = 300 if not st.session_state.is_first_5min_sent else 1800
-    st.metric("Thời gian chờ báo cáo tiếp theo", f"{int(elapsed_from_last_summary)} / {target_wait} giây")
+    target_wait = 60 if not st.session_state.is_first_1min_sent else 1800
+    st.metric("⏳ Tiến trình đếm ngược gửi báo cáo", f"{int(elapsed_from_last_summary)} / {target_wait} giây")
 
 for target_slug in st.session_state.target_slugs:
     data = get_polymarket_top6_data(target_slug)
@@ -328,7 +326,7 @@ for target_slug in st.session_state.target_slugs:
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-    # --- TÍCH LŨY DATA TOP 3 BINS CHO BÁO CÁO TỔNG KẾT ---
+    # --- TÍCH LŨY DỮ LIỆU TOP 3 BINS CÓ VỐN LỚN NHẤT THỰC TẾ ---
     top3_df = df.sort_values(by="Tổng vốn vị thế ($)", ascending=False).head(3)
     bin_strings = []
     for _, r in top3_df.iterrows():
@@ -339,18 +337,18 @@ for target_slug in st.session_state.target_slugs:
         "bins_info": "\n".join(bin_strings)
     }
 
-# --- 🛰️ ĐIỀU KIỆN KÍCH HOẠT THỜI GIAN GỬI BÁO CÁO (5 PHÚT ĐẦU & 30 PHÚT ĐỀU) ---
+# --- 🛰️ ĐIỀU KIỆN KÍCH HOẠT THỜI GIAN GỬI TỔNG KẾT (1 PHÚT ĐẦU & 30 PHÚT ĐỀU) ---
 trigger_report = False
 header_label = ""
 
-if not st.session_state.is_first_5min_sent:
-    # 1. Kiểm tra nếu vừa chạy được tròn hoặc hơn 5 phút (300 giây)
-    if current_now - st.session_state.bot_start_time >= 300:
+if not st.session_state.is_first_1min_sent:
+    # 1. KIỂM TRA CHẠY ĐỦ 1 PHÚT (60 GIÂY) ĐẦU TIÊN ĐỂ GỬI TEST NGHIỆM THU
+    if current_now - st.session_state.bot_start_time >= 60:
         trigger_report = True
-        header_label = "📊 [BÁO CÁO KHỞI ĐỘNG 5 PHÚT ĐẦU TIÊN]"
-        st.session_state.is_first_5min_sent = True
+        header_label = "📊 [BÁO CÁO KIỂM TRA NHANH - 1 PHÚT KHỞI CHẠY]"
+        st.session_state.is_first_1min_sent = True
 else:
-    # 2. Các chu kỳ sau đó tính đều đặn cứ đúng mỗi 30 phút (1800 giây) một lần
+    # 2. CÁC CHU KỲ TIẾP THEO SẼ TỰ ĐỘNG ĐẾM ĐỀU ĐẶN ĐÚNG 30 PHÚT (1800 GIÂY)
     if current_now - st.session_state.last_summary_time >= 1800:
         trigger_report = True
         header_label = "📊 [BÁO CÁO TỔNG KẾT ĐỊNH KỲ 30 PHÚT]"
@@ -360,6 +358,7 @@ if trigger_report:
         summary_msg = f"{header_label} 📊\n"
         summary_msg += "====================================\n\n"
         
+        # Lấy đầy đủ dữ liệu tích lũy của toàn bộ các thành phố
         for city_title, content in st.session_state.summary_data_accumulator.items():
             summary_msg += f"🏙️ *Thị trường:* {city_title.upper()}\n"
             summary_msg += f"🏷️ *Phân loại:* `{content['label']}`\n"
@@ -370,11 +369,11 @@ if trigger_report:
         
         send_telegram(st.session_state.channel_ngach, summary_msg)
         
-        # Cập nhật lại mốc thời gian gửi cuối cùng để tính tiếp 30 phút cho vòng sau
+        # Cập nhật mốc thời gian để làm căn cứ tính chu kỳ 30 phút tiếp theo
         st.session_state.last_summary_time = current_now
-        # Xóa sạch bộ nhớ đệm để chuẩn bị tích lũy dữ liệu mới
+        # Làm sạch hoàn toàn bộ đệm để tích lũy dữ liệu cho chu kỳ mới
         st.session_state.summary_data_accumulator = {}
 
-# Tự động reload theo tần suất cài đặt ở Slider
+# Tự động reload trang theo tần suất cài đặt ở Slider
 time.sleep(REFRESH_TIME)
 st.rerun()
