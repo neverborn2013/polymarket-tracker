@@ -94,7 +94,8 @@ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026
     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-25-2026   
     https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-25-2026 
 https://polymarket.com/event/highest-temperature-in-new-york-on-june-25-2026  
- https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-25-2026    
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-25-2026   
+  https://polymarket.com/vi/event/highest-temperature-in-miami-on-june-25-2026   
 https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-ath-in-june-2026
