@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V51.4 Premium", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V51.5 Auto", layout="wide")
 
 # --- 🎨 CHUẨN HÓA GIAO DIỆN HỆ THỐNG ---
 st.markdown(
@@ -44,7 +44,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🚀 POLYMARKET RADAR V51.4 - TỐI ƯU CHIẾN THUẬT CHỐT LỜI & CẮT LỖ")
+st.title("🚀 POLYMARKET RADAR V51.5 - AUTO RISK MANAGEMENT")
 
 # --- 💾 KHỞI TẠO BỘ NHỚ ĐỆM TRẠNG THÁI CACHING ---
 if "price_history" not in st.session_state:
@@ -55,10 +55,6 @@ if "last_signal_time" not in st.session_state:
     st.session_state.last_signal_time = {}
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
-
-# Khởi tạo bộ lưu trữ giá mua của người dùng (Để tính cắt lỗ 45%)
-if "user_entry_prices" not in st.session_state:
-    st.session_state.user_entry_prices = {}
 
 # Khởi tạo bộ nhớ đếm thời gian cho tính năng gửi báo cáo tổng kết 30 phút
 if "last_summary_time" not in st.session_state:
@@ -82,7 +78,7 @@ if "channel_ngach" not in st.session_state:
 RAW_URL_LIST = """
 https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026 
 https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026 
- https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-25-2026
+ https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-25-2026
  https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-25-2026 
@@ -93,8 +89,8 @@ https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026
     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-25-2026  
     https://polymarket.com/vi/event/highest-temperature-in-atlanta-on-june-25-2026 
 https://polymarket.com/event/highest-temperature-in-new-york-on-june-25-2026  
- https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-25-2026    
-https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026
+ https://polymarket.com/vi/event/highest-temperature-in-san-francisco-on-june-25-2026   
+https://polymarket.com/event/bitcoin-above-105k-on-june-26-2026 
 https://polymarket.com/event/ethereum-above-4200-on-june-26-2026
 https://polymarket.com/event/solana-ath-in-june-2026
 https://polymarket.com/vi/event/what-price-will-bitcoin-hit-june-22-28-2026
@@ -116,7 +112,7 @@ if "target_slugs" not in st.session_state:
 
 # --- ⚙️ SIDEBAR CONTROL PANEL ---
 with st.sidebar:
-    st.header("⚙️ Cấu hình Engine V51.4")
+    st.header("⚙️ Cấu hình Engine V51.5")
     tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
     
     st.write("---")
@@ -129,34 +125,17 @@ with st.sidebar:
     threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 50, 2000, value=st.session_state.whale_threshold, step=50)
     refresh_input = st.slider("Tần suất quét làm mới (giây):", 5, 60, value=st.session_state.refresh_rate)
     
-    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V51.4", use_container_width=True):
+    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V51.5", use_container_width=True):
         st.session_state.whale_threshold = threshold_input
         st.session_state.refresh_rate = refresh_input
         st.session_state.tg_token = tg_token_input
         st.session_state.channel_vip = id_vip_input.strip()
         st.session_state.channel_ngach = id_ngach_input.strip()
-        st.toast(f"🔒 Hệ thống đồng bộ chiến thuật mới!")
+        st.toast(f"🔒 Đã chuyển sang chế độ tự động quản trị rủi ro không cần nhập giá!")
 
 WHALE_LIMIT = float(st.session_state.whale_threshold)
 REFRESH_TIME = int(st.session_state.refresh_rate)
 TELEGRAM_TOKEN = st.session_state.tg_token
-
-# --- 🛠️ DÒNG TÍNH NĂNG MỚI: BẢNG CÀI ĐẶT GIÁ MUA ĐỂ QUẢN TRỊ RỦI RO CẮT LỖ ---
-st.subheader("📋 Cài đặt Giá vốn mua vào để Bot tính toán Cắt lỗ 45%")
-with st.expander("👉 Nhấn vào đây để thiết lập/nhập giá vốn lệnh bạn đã mua", expanded=False):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        input_key_slug = st.selectbox("Chọn Thành Phố / Thị Trường:", st.session_state.target_slugs)
-    with col2:
-        input_bin_name = st.text_input("Nhập chính xác tên Nhánh (Ví dụ: 22°C hoặc 68-69°F):")
-    with col3:
-        input_buy_price = st.number_input("Giá lúc bạn mua (Cents):", min_value=1.0, max_value=95.0, value=50.0, step=0.5)
-    
-    if st.button("💾 LƯU VỊ THẾ VÀO HỆ THỐNG GIÁM SÁT"):
-        if input_bin_name:
-            position_key = f"{input_key_slug}_{input_bin_name.strip()}"
-            st.session_state.user_entry_prices[position_key] = float(input_buy_price)
-            st.success(f"💥 Đã lưu vị thế: {input_bin_name} | Giá vốn: {input_buy_price}¢. Hệ thống sẽ tự động báo cắt lỗ nếu giảm 45%!")
 
 st.subheader(f"📋 Thị trường đang theo dõi chiến thuật (Top 6 Bins vốn cao):")
 slugs_text = st.text_area(
@@ -250,7 +229,6 @@ for target_slug in st.session_state.target_slugs:
         real_usd = row["Tổng vốn vị thế ($)"]
         
         history_key = f"{target_slug}_{mốc_đấu}_{hướng_cược}"
-        position_key = f"{target_slug}_{mốc_đấu}"
         
         previous_usd = st.session_state.price_history.get(history_key, None)
         previous_cents = st.session_state.cents_price_history.get(history_key, None)
@@ -301,39 +279,35 @@ for target_slug in st.session_state.target_slugs:
                 else:
                     flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f})"
 
-        # --- ⚽ PHẦN 2: ENGINE THAY ĐỔI THEO YÊU CẦU - CHỐT LỜI > 90¢ & CẮT LỖ GIẢM 45% SO VỚI GIÁ MUA ---
-        
-        # 1. KIỂM TRA ĐIỀU KIỆN CHỐT LỜI KHI GIÁ VƯỢT QUÁ 90 CENTS
-        if price_cents >= 90.0 and (previous_cents is None or previous_cents < 90.0):
-            flow_type = "💰 SIÊU LỢI NHUẬN (>90¢)"
-            profit_msg = (
-                f"🎯 *[BÁO ĐỘNG ĐẠT MỤC TIÊU: CHỐT LỜI ĐỈNH CAO]* 🎯\n\n"
-                f"🏆 *Thị trường ({asset_label}):* {title}\n"
-                f"📌 *Nhánh:* `{mốc_đấu}`\n"
-                f"🚀 *Trạng thái:* Giá cược đã bứt phá vượt ngưỡng **90¢** (Cửa thắng đạt >90%)\n"
-                f"📈 *Giá hiện tại:* `{price_cents:.2f}¢`\n"
-                f"📊 *Tổng vốn vị thế hiện tại:* *${real_usd:,.2f}*\n"
-                f"💡 *Khuyến nghị:* Tiến hành chốt lời từng phần để bảo toàn lợi nhuận!"
-            )
-            send_telegram(st.session_state.channel_ngach, profit_msg)
-
-        # 2. KIỂM TRA ĐIỀU KIỆN CẮT LỖ KHI GIÁ GIẢM 45% SO VỚI GIÁ MUA THỰC TẾ
-        if position_key in st.session_state.user_entry_prices:
-            entry_price = st.session_state.user_entry_prices[position_key]
-            # Tính toán xem giá hiện tại có thấp hơn hoặc bằng mức giảm 45% không
-            stop_loss_target = entry_price * (1 - 0.45)
+        # --- ⚽ PHẦN 2: ENGINE LIÊN TỤC TRACKING GIÁ AUTO (CẮT LỖ -45% & CHỐT LỜI >90¢) ---
+        if previous_cents is not None and previous_cents != price_cents:
             
-            if price_cents <= stop_loss_target and (previous_cents is None or previous_cents > stop_loss_target):
-                flow_type = "🚨 CẮT LỖ KHẨN CẤP (-45%)"
-                loss_percent = ((entry_price - price_cents) / entry_price) * 100
-                loss_msg = (
-                    f"⚠️ *[CẢNH BÁO QUẢN TRỊ RỦI RO: CẮT LỖ CHỦ ĐỘNG]* ⚠️\n\n"
+            # 1. TỰ ĐỘNG CHỐT LỜI KHI GIÁ VƯỢT QUÁ HOẶC BẰNG 90 CENTS
+            if price_cents >= 90.0 and previous_cents < 90.0:
+                flow_type = "💰 SIÊU LỢI NHUẬN (>90¢)"
+                profit_msg = (
+                    f"🎯 *[BÁO ĐỘNG ĐẠT MỤC TIÊU: CHỐT LỜI ĐỈNH CAO]* 🎯\n\n"
                     f"🏆 *Thị trường ({asset_label}):* {title}\n"
                     f"📌 *Nhánh:* `{mốc_đấu}`\n"
-                    f"🛑 *Trạng thái:* Giá sập chạm ngưỡng cắt lỗ mục tiêu!\n"
-                    f"📉 *Giá mua vào ban đầu:* `{entry_price:.2f}¢` ➡️ *Hiện tại:* `{price_cents:.2f}¢` (*Giảm {loss_percent:.1f}%*)\n"
+                    f"🚀 *Trạng thái:* Giá cược bứt phá vượt ngưỡng an toàn **90¢**\n"
+                    f"📈 *Giá cũ:* `{previous_cents:.2f}¢` ➡️ *Giá hiện tại:* `{price_cents:.2f}¢`\n"
+                    f"📊 *Tổng vốn vị thế hiện tại:* *${real_usd:,.2f}*\n"
+                    f"💡 *Hành động:* Thực hiện chốt lời!"
+                )
+                send_telegram(st.session_state.channel_ngach, profit_msg)
+            
+            # 2. TỰ ĐỘNG CẮT LỖ KHI GIÁ SỤT GIẢM 45% SO VỚI MỨC GIÁ CHU KỲ TRƯỚC ĐÓ ĐÃ THÔNG BÁO
+            drop_ratio = (previous_cents - price_cents) / previous_cents
+            if drop_ratio >= 0.45:
+                flow_type = "🚨 CẮT LỖ KHẨN CẤP (-45%)"
+                loss_msg = (
+                    f"⚠️ *[BÁO ĐỘNG RỦI RO: TỰ ĐỘNG CẮT LỖ]* ⚠️\n\n"
+                    f"🏆 *Thị trường ({asset_label}):* {title}\n"
+                    f"📌 *Nhánh:* `{mốc_đấu}`\n"
+                    f"🛑 *Trạng thái:* Phát hiện bước giá sụt giảm sâu đột ngột vượt quá **45%**!\n"
+                    f"📉 *Giá chu kỳ trước:* `{previous_cents:.2f}¢` ➡️ *Giá hiện tại:* `{price_cents:.2f}¢` (*Giảm mạnh {drop_ratio*100:.1f}%*)\n"
                     f"📊 *Tổng vốn vị thế còn lại:* *${real_usd:,.2f}*\n"
-                    f"💸 *Khuyến nghị:* Thực hiện đóng vị thế để hạn chế tối đa rủi ro tài khoản!"
+                    f"💸 *Hành động:* Cân nhắc thoát vị thế cắt lỗ bảo vệ tài khoản!"
                 )
                 send_telegram(st.session_state.channel_ngach, loss_msg)
 
