@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-st.set_page_config(page_title="Polymarket Radar V52.0 Premium", layout="wide")
+st.set_page_config(page_title="Polymarket Radar V52.1 Premium", layout="wide")
 
 # --- 🎨 CHUẨN HÓA GIAO DIỆN HỆ THỐNG ---
 st.markdown(
@@ -44,7 +44,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("🚀 POLYMARKET RADAR V52.0 - FIX TRIỆT ĐỂ KẾT NỐI TELEGRAM")
+st.title("🚀 POLYMARKET RADAR V52.1 - KHẮC PHỤC LỖI QUÁ TẢI TIN NHẮN")
 
 # --- 💾 KHỞI TẠO BỘ NHỚ ĐỆM TRẠNG THÁI CACHING ---
 if "price_history" not in st.session_state:
@@ -56,7 +56,7 @@ if "last_signal_time" not in st.session_state:
 if "last_whale_alert_v47" not in st.session_state:
     st.session_state.last_whale_alert_v47 = {}
 
-# --- 🕒 LOGIC ĐẾM THỜI GIAN CHUẨN XÁC ---
+# --- 🕒 LOGIC ĐẾM THỜI GIAN ---
 if "bot_start_time" not in st.session_state:
     st.session_state.bot_start_time = time.time()
 if "last_summary_time" not in st.session_state:
@@ -68,7 +68,7 @@ if "summary_data_accumulator" not in st.session_state:
 if "last_sent_log" not in st.session_state:
     st.session_state.last_sent_log = "Chưa gửi bản tin nào."
 
-# Cấu hình hệ thống mặc định
+# Cấu hình mặc định
 if "whale_threshold" not in st.session_state:
     st.session_state.whale_threshold = 150  
 if "refresh_rate" not in st.session_state:
@@ -80,16 +80,15 @@ if "channel_vip" not in st.session_state:
 if "channel_ngach" not in st.session_state:
     st.session_state.channel_ngach = "-1004377611538"
 
-# URL danh sách các thành phố cần theo dõi lấy từ ảnh của bạn
 RAW_URL_LIST = """
-https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026 
+https://polymarket.com/event/highest-temperature-in-tokyo-on-june-25-2026
 https://polymarket.com/vi/event/highest-temperature-in-hong-kong-on-june-25-2026 
- https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-25-2026
+ https://polymarket.com/vi/event/highest-temperature-in-seoul-on-june-25-2026 
  https://polymarket.com/vi/event/highest-temperature-in-shanghai-on-june-25-2026 
- https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-25-2026
- https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-25-2026
-  https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-25-2026
- https://polymarket.com/vi/event/highest-temperature-in-london-on-june-25-2026   
+ https://polymarket.com/vi/event/highest-temperature-in-cape-town-on-june-25-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-wellington-on-june-25-2026 
+  https://polymarket.com/vi/event/highest-temperature-in-tel-aviv-on-june-25-2026 
+ https://polymarket.com/vi/event/highest-temperature-in-london-on-june-25-2026  
    https://polymarket.com/vi/event/highest-temperature-in-paris-on-june-25-2026
     https://polymarket.com/event/highest-temperature-in-madrid-on-june-25-2026
     https://polymarket.com/vi/event/highest-temperature-in-munich-on-june-25-2026   
@@ -118,7 +117,7 @@ if "target_slugs" not in st.session_state:
 
 # --- ⚙️ SIDEBAR CONTROL PANEL ---
 with st.sidebar:
-    st.header("⚙️ Cấu hình Engine V52.0")
+    st.header("⚙️ Cấu hình Engine V52.1")
     tg_token_input = st.text_input("Telegram Bot Token:", value=st.session_state.tg_token, type="password")
     
     st.write("---")
@@ -131,13 +130,13 @@ with st.sidebar:
     threshold_input = st.slider("Ngưỡng lọc tiền Cá Voi ($):", 50, 2000, value=st.session_state.whale_threshold, step=50)
     refresh_input = st.slider("Tần suất quét làm mới (giây):", 5, 60, value=st.session_state.refresh_rate)
     
-    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V52.0", use_container_width=True):
+    if st.button("⚡ ĐỒNG BỘ SUITE TOÀN DIỆN V52.1", use_container_width=True):
         st.session_state.whale_threshold = threshold_input
         st.session_state.refresh_rate = refresh_input
         st.session_state.tg_token = tg_token_input
         st.session_state.channel_vip = id_vip_input.strip()
         st.session_state.channel_ngach = id_ngach_input.strip()
-        st.toast(f"🔒 Đồng bộ dữ liệu lõi V52.0 thành công!")
+        st.toast(f"🔒 Đồng bộ Suite V52.1 thành công!")
 
 WHALE_LIMIT = float(st.session_state.whale_threshold)
 REFRESH_TIME = int(st.session_state.refresh_rate)
@@ -154,24 +153,31 @@ current_input_slugs = [extract_slug(line) for line in slugs_text.split("\n") if 
 if current_input_slugs and current_input_slugs != st.session_state.target_slugs:
     st.session_state.target_slugs = current_input_slugs
 
-# --- 🛰️ HÀM GỬI TELEGRAM ĐƯỢC ÉP KIỂU SỐ NGUYÊN VÀ BAT ERROR CHI TIẾT ---
+# --- 🛰️ HÀM GỬI TELEGRAM DIRECT (CÓ HỖ TRỢ CHẶT TIN NHẮN DÀI) ---
 def send_telegram_direct(chat_id_str, message):
     if not TELEGRAM_TOKEN or not chat_id_str: 
         return "Lỗi: Chưa nhập Token hoặc ID Kênh."
     try:
-        # Ép kiểu ID chuỗi sang dạng số nguyên int phục vụ JSON Telegram payload
         chat_id_int = int(chat_id_str.strip())
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        payload = {"chat_id": chat_id_int, "text": message, "parse_mode": "Markdown"}
-        r = requests.post(url, json=payload, timeout=8)
         
-        if r.status_code == 200:
-            return "OK"
-        else:
-            reason = r.json().get("description", "Không rõ nguyên nhân")
-            return f"Telegram API Từ chối: {reason} (Code {r.status_code})"
+        # Nếu tin nhắn quá dài (> 3500 ký tự), tự động chặt đôi/ba để gửi lần lượt
+        chunks = [message[i:i+3500] for i in range(0, len(message), 3500)]
+        
+        for idx, chunk in enumerate(chunks):
+            final_text = chunk
+            if len(chunks) > 1:
+                final_text = f" [Phần {idx+1}/{len(chunks)}]\n" + chunk
+                
+            payload = {"chat_id": chat_id_int, "text": final_text, "parse_mode": "Markdown"}
+            r = requests.post(url, json=payload, timeout=8)
+            if r.status_code != 200:
+                reason = r.json().get("description", "Không rõ nguyên nhân")
+                return f"Telegram API Từ chối ở Phần {idx+1}: {reason} (Code {r.status_code})"
+                
+        return "OK"
     except ValueError:
-        return f"Lỗi: ID Kênh '{chat_id_str}' không phải số nguyên hợp lệ!"
+        return f"Lỗi: ID Kênh '{chat_id_str}' không hợp lệ!"
     except Exception as e:
         return f"Lỗi kết nối: {str(e)}"
 
@@ -189,7 +195,6 @@ with col_t1:
 with col_t2:
     st.metric("⏳ Tiến trình đếm ngược gửi báo cáo", f"{int(elapsed_from_last_summary)} / {target_wait} giây")
 
-# Hiển thị log trạng thái gửi trực tiếp lên Web để dễ debug
 if "Thành công" in st.session_state.last_sent_log:
     st.success(f"📢 **Trạng thái gửi tin:** {st.session_state.last_sent_log}")
 else:
@@ -221,14 +226,14 @@ if trigger_report and st.session_state.summary_data_accumulator:
     
     summary_msg += f"🕒 *Thời gian xuất vị thế:* {time.strftime('%H:%M:%S', time.localtime(current_now))}"
     
-    # Thực hiện lệnh bắn tin khéo léo và hứng log lỗi
     result_status = send_telegram_direct(st.session_state.channel_ngach, summary_msg)
     if result_status == "OK":
-        st.session_state.last_sent_log = f"Thành công! Gửi bản tin lúc {time.strftime('%H:%M:%S')} về kênh {st.session_state.channel_ngach}"
+        st.session_state.last_sent_log = f"Thành công! Gửi bản tin tổng kết lúc {time.strftime('%H:%M:%S')} về kênh {st.session_state.channel_ngach}"
     else:
         st.session_state.last_sent_log = f"Thất bại! Lý do: {result_status}"
         
     st.session_state.last_summary_time = current_now
+    # RESET HOÀN TOÀN BỘ ĐỆM ĐỂ CHU KỲ SAU KHÔNG BỊ PHÌNH TO
     st.session_state.summary_data_accumulator = {}
     st.rerun()
 
@@ -244,7 +249,6 @@ def get_polymarket_top6_data(slug):
             
             title_lower = market_title.lower()
             is_weather = "°c" in title_lower or "temperature" in title_lower or "°f" in title_lower
-            is_sports = " vs " in title_lower or " vs. " in title_lower or "match" in title_lower
 
             raw_bins = []
             for m in markets_list:
@@ -281,12 +285,15 @@ def get_polymarket_top6_data(slug):
                     "Tổng vốn vị thế ($)": row['Total_Asset_Value']
                 })
                 
-            asset_label = "THỜI TIẾT" if is_weather else ("THỂ THAO" if is_sports else "TIN TỨC CỘNG ĐỒNG")
+            asset_label = "THỜI TIẾT" if is_weather else "TIN TỨC CỘNG ĐỒNG"
             return {"title": market_title, "df": pd.DataFrame(final_data), "label": asset_label}
         return None
     except: return None
 
-# --- 🔄 VÒNG LẶP QUÉT REAL-TIME DATA CÁC THÀNH PHỐ ---
+# --- 🔄 VÒNG LẶP QUÉT DATA REAL-TIME ---
+# Chỉ tích lũy dữ liệu vào accumulator khi bot chuẩn bị tiến tới mốc thời gian xuất báo cáo
+is_near_report = (not st.session_state.is_first_1min_sent and elapsed_from_start >= 50) or (st.session_state.is_first_1min_sent and elapsed_from_last_summary >= 1790)
+
 for target_slug in st.session_state.target_slugs:
     data = get_polymarket_top6_data(target_slug)
     if data is None: continue
@@ -306,64 +313,40 @@ for target_slug in st.session_state.target_slugs:
         
         history_key = f"{target_slug}_{mốc_đấu}_{hướng_cược}"
         previous_usd = st.session_state.price_history.get(history_key, None)
-        previous_cents = st.session_state.cents_price_history.get(history_key, None)
         
         flow_type = "🔄 ỔN ĐỊNH NỀN"
 
         if previous_usd is not None:
             delta_cash = abs(real_usd - previous_usd)
-            
             if delta_cash >= WHALE_LIMIT:
                 flow_type = "👑 [VIP] CÁ VOI KHỦNG"
-                st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN CÁ VOI ĐẠT CHUẨN | Tiền ròng: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="whale-real-alert">👑 PHÁT HIỆN CÁ VOI | Tiền ròng: ${delta_cash:,.2f}</div>', unsafe_allow_html=True)
                 
                 last_alert_time = st.session_state.last_whale_alert_v47.get(history_key, 0)
                 if current_now - last_alert_time > 20:
-                    urgent_msg = (
-                        f"👑 *[CÁ VOI KHỦNG PHÁT HIỆN BIẾN ĐỘNG]* 👑\n\n"
-                        f"🏆 *Thị trường:* {title}\n"
-                        f"📌 *Mốc:* `{mốc_đấu}`\n"
-                        f"💵 *Mức giá:* `{price_cents:.2f}¢`\n"
-                        f"💰 *Tiền vào ròng:* *${delta_cash:,.2f}*\n"
-                        f"📊 *Tổng vốn vị thế:* *${real_usd:,.2f}*"
-                    )
+                    urgent_msg = f"👑 *[CÁ VOI KHỦNG]* 👑\n\n🏆 *Thị trường:* {title}\n📌 *Mốc:* `{mốc_đấu}`\n💵 *Giá:* `{price_cents:.2f}¢`\n💰 *Tiền ròng:* *${delta_cash:,.2f}*"
                     send_telegram_direct(st.session_state.channel_vip, urgent_msg)
                     st.session_state.last_whale_alert_v47[history_key] = current_now
-                    
-            elif delta_cash >= (WHALE_LIMIT * 0.4):
-                flow_type = "🐟 [NGÁCH] GOM SỚM"
-                last_signal = st.session_state.last_signal_time.get(history_key, 0)
-                if current_now - last_signal > 30:
-                    gom_msg = (
-                        f"🐟 *[TÍN HIỆU GOM SỚM]* 🐟\n\n"
-                        f"🏆 *Thị trường:* {title}\n"
-                        f"📌 *Nhánh:* `{mốc_đấu}`\n"
-                        f"💰 *Lượng tiền:* *${delta_cash:,.2f}*\n"
-                        f"📊 *Vốn vị thế:* *${real_usd:,.2f}*"
-                    )
-                    send_telegram_direct(st.session_state.channel_ngach, gom_msg)
-                    st.session_state.last_signal_time[history_key] = current_now
             else:
                 flow_type = f"⚪ Nhỏ lẻ (${delta_cash:.2f})"
 
         st.session_state.price_history[history_key] = real_usd
-        st.session_state.cents_price_history[history_key] = price_cents
         analysis_labels.append(flow_type)
 
     df["Phân Loại Dòng Tiền"] = analysis_labels
     st.dataframe(df, width="stretch", hide_index=True)
 
-    # --- TÍCH LŨY DỮ LIỆU TOP 3 BINS VỐN LỚN NHẤT ---
-    top3_df = df.sort_values(by="Tổng vốn vị thế ($)", ascending=False).head(3)
-    bin_strings = []
-    for _, r in top3_df.iterrows():
-        bin_strings.append(f"  • Mốc {r['Nhánh Cược (Bin)']}: *{r['Giá (Cents)']:.2f}¢* (Vốn: `${r['Tổng vốn vị thế ($)']:,.2f}`)")
-    
-    st.session_state.summary_data_accumulator[title] = {
-        "label": asset_label,
-        "bins_info": "\n".join(bin_strings)
-    }
+    # CHỈ TÍCH LŨY KHI SẮP ĐẾN CHU KỲ XUẤT BÁO CÁO ĐỂ TRÁNH TRÀN BỘ NHỚ
+    if is_near_report:
+        top3_df = df.sort_values(by="Tổng vốn vị thế ($)", ascending=False).head(3)
+        bin_strings = []
+        for _, r in top3_df.iterrows():
+            bin_strings.append(f"  • Mốc {r['Nhánh Cược (Bin)']}: *{r['Giá (Cents)']:.2f}¢* (Vốn: `${r['Tổng vốn vị thế ($)']:,.2f}`)")
+        
+        st.session_state.summary_data_accumulator[title] = {
+            "label": asset_label,
+            "bins_info": "\n".join(bin_strings)
+        }
 
-# Thiết lập chu kỳ quét lại trang tự động
 time.sleep(REFRESH_TIME)
 st.rerun()
